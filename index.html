@@ -22,8 +22,9 @@
   --glass-border: rgb(255 255 255 / .5);
   --glass-shadow: 0 10px 40px -10px rgb(0 0 0 / .25), inset 0 1px 0 rgb(255 255 255 / .7), inset 0 -1px 0 rgb(255 255 255 / .15);
   --soft-shadow: 0 0 .5px rgb(0 0 0 / .4), 0 1px .5px rgb(0 0 0 / .04), 0 2px 2px rgb(0 0 0 / .04);
-  --sky: linear-gradient(to bottom, rgb(224 240 253), rgb(239 247 254 / .7) 45%, transparent);
-  --cloud: rgb(255 255 255 / .92);
+  --sky: linear-gradient(to bottom, rgb(232 234 238), rgb(244 245 247 / .7) 40%, transparent);
+  --cloud: rgb(214 217 223 / .9);
+  --rain: 60 64 72;
 }
 :root[data-theme="dark"] {
   --bg: #0a0a0a;
@@ -39,7 +40,8 @@
   --glass-shadow: 0 10px 40px -10px rgb(0 0 0 / .7), inset 0 1px 0 rgb(255 255 255 / .2), inset 0 -1px 0 rgb(255 255 255 / .05);
   --soft-shadow: 0 0 0 1px rgb(255 255 255 / .15);
   --sky: linear-gradient(to bottom, rgb(30 41 59 / .55), rgb(23 32 48 / .3) 45%, transparent);
-  --cloud: rgb(148 163 184 / .1);
+  --cloud: rgb(148 163 184 / .12);
+  --rain: 200 210 225;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -115,20 +117,16 @@ ul { list-style: none; }
 
 /* ---------- Hero sky scene ---------- */
 main { position: relative; isolation: isolate; }
-.scene { position: absolute; inset: 0 0 auto 0; height: 100svh; z-index: -1; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+.scene { position: absolute; inset: 0 0 auto 0; height: 115svh; z-index: -1; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
 .scene .sky { position: absolute; inset: 0; background: var(--sky); }
-.sun { position: absolute; right: -300px; top: -320px; width: 820px; height: 820px; border-radius: 50%; filter: blur(64px); background: radial-gradient(circle, rgb(255 244 204) 0%, rgb(255 229 160 / .7) 30%, rgb(255 222 150 / .25) 55%, transparent 72%); animation: pulse 8s ease-in-out infinite; }
-.sun.core { right: -80px; top: -140px; width: 360px; height: 360px; filter: blur(40px); background: radial-gradient(circle, rgb(255 252 235) 0%, rgb(255 240 190 / .6) 45%, transparent 70%); }
-@keyframes pulse { 50% { transform: scale(1.06); } }
-:root[data-theme="dark"] .sun { display: none; }
+
 .cloud { position: absolute; left: 0; width: 288px; height: 96px; animation: drift linear infinite; }
 .cloud span { position: absolute; border-radius: 999px; background: var(--cloud); filter: blur(12px); }
 .cloud span:nth-child(1) { left: 24px; top: 32px; width: 160px; height: 56px; }
 .cloud span:nth-child(2) { left: 80px; top: 8px; width: 112px; height: 80px; }
 .cloud span:nth-child(3) { left: 144px; top: 28px; width: 112px; height: 56px; }
 @keyframes drift { from { transform: translateX(-320px) scale(var(--s)); } to { transform: translateX(calc(100vw + 40px)) scale(var(--s)); } }
-#stars { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s; }
-:root[data-theme="dark"] #stars { opacity: 1; }
+#rain { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* ---------- Hero ---------- */
 .hero { max-width: 1280px; margin: 0 auto; min-height: 100svh; display: grid; align-items: center; gap: 48px; padding: 112px 24px 64px; }
@@ -162,10 +160,12 @@ main { position: relative; isolation: isolate; }
 @keyframes shine { 0%, 40% { left: -58%; } 100% { left: 120%; } }
 .metal-btn svg { width: 16px; height: 16px; }
 
-.hero-mark { width: 120px; height: 120px; justify-self: center; color: var(--fg); opacity: .9; }
-.hero-mark .spin { transform-origin: 60px 60px; animation: rot 24s linear infinite; }
+.avatar { width: min(380px, 78vw); justify-self: center; display: block; }
+.avatar .head { transform-box: view-box; transform-origin: 200px 280px; transition: transform .25s ease-out; }
+.avatar .pupil { transition: transform .12s ease-out; }
+.avatar .stroke { stroke: #111; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 1023px) { .avatar { order: 3; width: min(300px, 72vw); } }
 @keyframes rot { to { transform: rotate(360deg); } }
-@media (max-width: 1023px) { .hero-mark { display: none; } }
 
 .accordion { width: 100%; max-width: 384px; }
 @media (min-width: 1024px) { .accordion { justify-self: end; } }
@@ -312,7 +312,7 @@ main { position: relative; isolation: isolate; }
 @media (min-width: 768px) { .photos { grid-template-columns: repeat(3, 1fr); height: 632px; } }
 .photos .col { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .photo { border-radius: 20px; background: var(--secondary); overflow: hidden; position: relative; width: 100%; transition: filter .5s, opacity .5s; }
-.photo img { width: 100%; height: 100%; object-fit: cover; }
+.photo img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, center); }
 .photo .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; font-size: 13px; color: var(--muted); }
 .photo.short { height: 300px; }
 .photo.tall { height: 480px; }
@@ -405,9 +405,8 @@ footer { overflow: clip; padding: 0 24px; }
 <main>
   <div class="scene" aria-hidden="true">
     <div class="sky"></div>
-    <canvas id="stars"></canvas>
     <div id="clouds"></div>
-    <div class="sun"></div><div class="sun core"></div>
+    <canvas id="rain"></canvas>
   </div>
 
   <!-- HERO -->
@@ -424,10 +423,48 @@ footer { overflow: clip; padding: 0 24px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></a>
       </div>
     </div>
-    <svg class="hero-mark" viewBox="0 0 120 120" aria-hidden="true">
-      <g class="spin" fill="none" stroke="currentColor" stroke-width="1.2">
-        <circle cx="60" cy="60" r="56" stroke-dasharray="2 6" opacity=".4"/>
-        <path d="M60 18 C64 48 72 56 102 60 C72 64 64 72 60 102 C56 72 48 64 18 60 C48 56 56 48 60 18Z" fill="currentColor" stroke="none"/>
+    <!-- Line-art portrait. Eyes follow the cursor; head tilts slightly. -->
+    <svg class="avatar" id="avatar" viewBox="0 0 400 400" role="img" aria-label="Illustration of Toufik">
+      <g class="stroke">
+        <!-- shirt, tie and collar -->
+        <path d="M150 288 L250 288 L246 400 L154 400 Z" fill="#fafafa"/>
+        <path d="M188 300 L212 300 L208 318 L192 318 Z" fill="#5b1e2d"/>
+        <path d="M192 318 L208 318 L214 334 L210 400 L190 400 L186 334 Z" fill="#5b1e2d"/>
+        <path d="M164 280 L192 300 L178 324 L154 296 Z" fill="#fafafa"/>
+        <path d="M236 280 L208 300 L222 324 L246 296 Z" fill="#fafafa"/>
+        <!-- jacket -->
+        <path d="M30 400 C36 346 84 314 152 292 L170 336 L162 346 L186 400 Z" fill="#1d1d1f"/>
+        <path d="M370 400 C364 346 316 314 248 292 L230 336 L238 346 L214 400 Z" fill="#1d1d1f"/>
+        <path d="M96 400 L100 362 M304 400 L300 362" fill="none" stroke="#555" stroke-width="3"/>
+        <!-- neck -->
+        <path d="M168 248 L168 284 C180 296 220 296 232 284 L232 248 Z" fill="#fafafa"/>
+      </g>
+      <g class="head stroke" id="head">
+        <!-- ears -->
+        <ellipse cx="128" cy="172" rx="16" ry="25" fill="#fafafa"/>
+        <ellipse cx="272" cy="172" rx="16" ry="25" fill="#fafafa"/>
+        <path d="M128 162 Q120 172 128 184 M272 162 Q280 172 272 184" fill="none" stroke-width="3"/>
+        <!-- face -->
+        <path d="M132 148 C130 96 162 70 200 70 C240 70 270 96 268 148 C268 206 250 258 200 264 C150 258 132 206 132 148 Z" fill="#fafafa"/>
+        <!-- hair: short sides, swept top -->
+        <path d="M130 160 C116 104 138 58 196 50 C252 44 288 76 272 158 C268 134 264 118 256 106 C230 96 196 104 158 94 C148 110 138 132 134 160 Z" fill="#202020"/>
+        <path d="M164 66 C196 56 236 60 260 80" fill="none" stroke="#5a5a5a" stroke-width="3"/>
+        <!-- brows -->
+        <path d="M148 138 Q165 128 183 136 M217 136 Q235 128 252 138" fill="none"/>
+        <!-- eyes -->
+        <path d="M152 162 Q166 150 180 162 Q166 172 152 162 Z" fill="#fff" stroke-width="3.5"/>
+        <path d="M220 162 Q234 150 248 162 Q234 172 220 162 Z" fill="#fff" stroke-width="3.5"/>
+        <circle class="pupil" cx="166" cy="162" r="5" fill="#111" stroke="none"/>
+        <circle class="pupil" cx="234" cy="162" r="5" fill="#111" stroke="none"/>
+        <!-- nose -->
+        <path d="M200 166 Q197 186 191 196 Q200 203 209 196" fill="none" stroke-width="4"/>
+        <!-- light moustache -->
+        <path d="M184 213 Q200 207 216 213" fill="none" stroke-width="3" opacity=".6"/>
+        <!-- smile with teeth -->
+        <path d="M166 220 Q200 262 234 220 Q200 230 166 220 Z" fill="#fff"/>
+        <path d="M172 226 Q200 236 228 226" fill="none" stroke-width="2.5" opacity=".5"/>
+        <!-- cheek lines -->
+        <path d="M158 214 Q154 222 160 230 M242 214 Q246 222 240 230" fill="none" stroke-width="3" opacity=".5"/>
       </g>
     </svg>
     <ul class="accordion" id="accordion"></ul>
@@ -655,7 +692,7 @@ const SITE = {
   ],
   // Three photos for the collage: [left, middle (tall), right]
   photos: [
-    { alt: "Photo of you outdoors" }, { alt: "Photo of you giving a talk" }, { alt: "A favourite travel photo" },
+    { alt: "Photo of you outdoors" }, { img: "me.jpg", alt: "Portrait of Toufik", pos: "52% 30%" }, { alt: "A favourite travel photo" },
   ],
 
   // [role, organisation, place, years]
@@ -743,28 +780,67 @@ function setActive() {
 }
 addEventListener("scroll", setActive, { passive: true });
 
-/* ---------- Sky: clouds + stars ---------- */
+/* ---------- Sky: clouds + rain ---------- */
 [[8, 1.1, 70, -10], [22, .8, 90, -45], [4, .7, 110, -80], [30, 1, 80, -30], [14, .6, 120, -60]].forEach(([top, s, dur, delay]) => {
   const c = el("div", { class: "cloud" }, "<span></span><span></span><span></span>");
   c.style.cssText = `top:${top}%;--s:${s};animation-duration:${dur}s;animation-delay:${delay}s`;
   $("#clouds").append(c);
 });
-(function stars() {
-  const cv = $("#stars"), ctx = cv.getContext("2d");
-  let pts = [];
+/* Rain: streaks slant toward wherever the mouse is moving */
+const pointer = { x: innerWidth / 2, y: innerHeight / 3, vx: 0 };
+addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
+(function rain() {
+  const cv = $("#rain"), ctx = cv.getContext("2d");
+  let drops = [], w = 0, h = 0, wind = 0, onScreen = true;
+  const color = () => getComputedStyle(root).getPropertyValue("--rain").trim().split(/\s+/).join(",");
+  let rgb = color();
+  new MutationObserver(() => { rgb = color(); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(cv);
   function size() {
-    cv.width = cv.offsetWidth * devicePixelRatio; cv.height = cv.offsetHeight * devicePixelRatio;
-    pts = Array.from({ length: Math.round(cv.offsetWidth / 9) }, () => ({ x: Math.random() * cv.width, y: Math.random() * cv.height * .6, r: (Math.random() * 1.1 + .3) * devicePixelRatio, p: Math.random() * 6.28 }));
+    const dpr = Math.min(devicePixelRatio, 2);
+    w = cv.offsetWidth; h = cv.offsetHeight;
+    cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drops = Array.from({ length: Math.round(w * h / 9000) }, () => newDrop(true));
   }
-  function draw(t) {
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    for (const s of pts) {
-      ctx.globalAlpha = .35 + .45 * Math.sin(t / 900 + s.p) ** 2;
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill();
+  function newDrop(anywhere) {
+    const z = Math.random();                       // depth: far drops are shorter, slower, fainter
+    return { x: Math.random() * (w + 200) - 100, y: anywhere ? Math.random() * h : -30, len: 8 + z * 18, v: 5 + z * 9, a: .12 + z * .35 };
+  }
+  function frame() {
+    if (onScreen) {
+      // Target slant: cursor side of the screen + how fast the mouse is moving
+      const target = ((pointer.x / innerWidth) - .5) * 1.1 + Math.max(-1, Math.min(1, pointer.vx / 40)) * .6;
+      pointer.vx *= .9;
+      wind += (Math.max(-1.2, Math.min(1.2, target)) - wind) * .05;
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1; ctx.lineCap = "round";
+      for (const d of drops) {
+        const dx = wind * d.v * .6;
+        d.x += dx; d.y += d.v;
+        ctx.strokeStyle = `rgba(${rgb},${d.a})`;
+        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - dx / d.v * d.len, d.y - d.len); ctx.stroke();
+        if (d.y > h + 20 || d.x < -120 || d.x > w + 120) Object.assign(d, newDrop(false));
+      }
     }
-    if (!reduced) requestAnimationFrame(draw);
+    if (!reduced) requestAnimationFrame(frame);
   }
-  size(); addEventListener("resize", size); requestAnimationFrame(draw);
+  size(); addEventListener("resize", size); frame();
+})();
+
+/* Portrait: pupils look at the cursor, head leans gently toward it */
+(function avatar() {
+  const svg = $("#avatar"); if (!svg || reduced) return;
+  const pupils = [...svg.querySelectorAll(".pupil")], head = $("#head");
+  addEventListener("pointermove", () => {
+    const r = svg.getBoundingClientRect(), s = r.width / 400;
+    pupils.forEach(p => {
+      const cx = r.left + p.cx.baseVal.value * s, cy = r.top + p.cy.baseVal.value * s;
+      const ang = Math.atan2(pointer.y - cy, pointer.x - cx), dist = Math.min(1, Math.hypot(pointer.x - cx, pointer.y - cy) / 300);
+      p.style.transform = `translate(${Math.cos(ang) * 5 * dist}px, ${Math.sin(ang) * 2.5 * dist}px)`;
+    });
+    const nx = (pointer.x - (r.left + r.width / 2)) / innerWidth, ny = (pointer.y - (r.top + r.height * .4)) / innerHeight;
+    head.style.transform = `rotate(${nx * 8}deg) translate(${nx * 6}px, ${ny * 4}px)`;
+  }, { passive: true });
 })();
 
 /* ---------- Hero roles (letter morph) ---------- */
@@ -950,7 +1026,7 @@ SITE.experiments.forEach(x => $("#exps").append(el("li", { class: "exp reveal" }
 $("#aboutHeadline").textContent = SITE.aboutHeadline;
 SITE.aboutText.forEach(p => { const e = el("p"); e.textContent = p; $("#aboutText").append(e); });
 (function photos() {
-  const ph = p => p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : `<span class="ph">${esc(p.alt)}</span>`;
+  const ph = p => p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" style="--pos:${esc(p.pos || "center")}">` : `<span class="ph">${esc(p.alt)}</span>`;
   const [a, b, c] = SITE.photos;
   $("#photos").innerHTML = `
     <div class="col"><div class="photo short" role="img" aria-label="${esc(a.alt)}">${ph(a)}</div><div class="photo-sq" aria-hidden="true"></div></div>
