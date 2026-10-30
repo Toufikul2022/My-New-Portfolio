@@ -220,6 +220,7 @@ main { position: relative; isolation: isolate; }
 .wall-grid { columns: 2; column-gap: 12px; }
 @media (min-width: 768px) { .wall-grid { columns: 3; } }
 .tile { break-inside: avoid; margin-bottom: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--secondary); overflow: hidden; position: relative; }
+.tile a { position: absolute; inset: 0; }
 .tile img, .tile video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .tile .ph { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 14px; font-size: 13px; font-weight: 500; color: rgb(255 255 255 / .9); }
 
@@ -238,14 +239,15 @@ main { position: relative; isolation: isolate; }
 .media-card { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; overflow: clip; border-radius: 24px; padding-bottom: 32px; background: var(--secondary); }
 @media (min-width: 1024px) { .media-card { height: 568px; } }
 .media-card .backdrop { position: absolute; inset: 0; }
-.media-card .backdrop img { width: 100%; height: 100%; object-fit: cover; }
+.media-card .backdrop { overflow: hidden; }
+.media-card .backdrop img { width: 100%; height: 100%; object-fit: cover; filter: blur(18px) saturate(1.2) brightness(.8); transform: scale(1.15); }
 .media-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / .35), transparent); }
 .media-inner { position: relative; margin-left: 28px; border-bottom-left-radius: 20px; background: var(--secondary); }
 @media (min-width: 1024px) { .media-inner { height: 446px; } }
 .screen { position: relative; aspect-ratio: 511 / 322; border-radius: 24px; overflow: clip; background: #0a0a0a; }
 .media-inner .screen { margin: 12px 30px; }
 @media (max-width: 480px) { .media-inner .screen { margin: 12px 16px; } }
-.screen img, .screen video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.screen img, .screen video { width: 100%; height: 100%; object-fit: cover; object-position: top center; position: absolute; inset: 0; }
 .screen .ph { position: absolute; inset: 0; display: grid; place-items: center; color: rgb(255 255 255 / .35); font-size: 14px; }
 .prompt { margin-right: 36px; display: flex; gap: 8px; border-top: 1px solid var(--border); padding: 28px 16px 16px; }
 .prompt p { flex: 1; min-width: 0; max-width: 320px; height: 36px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; background: var(--bg); font-size: 14px; color: var(--muted); box-shadow: var(--soft-shadow); }
@@ -505,7 +507,7 @@ footer { overflow: clip; padding: 0 24px; }
   <section id="experiments" class="sec" aria-labelledby="expTitle">
     <div class="frame">
       <div class="rule"><i></i><i></i></div>
-      <div class="sec-head"><h2 class="h2" id="expTitle">Experiments</h2></div>
+      <div class="sec-head"><h2 class="h2" id="expTitle">More Work</h2></div>
     </div>
     <div class="frame cards-pad">
       <ul class="exps" id="exps"></ul>
@@ -574,145 +576,235 @@ footer { overflow: clip; padding: 0 24px; }
 const SITE = {
   name: "Toufik Ul Islam",
   wordmark: "toufik",
-  email: "you@example.com",
-  bookingUrl: "https://calendly.com/your-link",
-  bookingLabel: "Book a Call",
-  links: { LinkedIn: "https://www.linkedin.com/in/toufik-ul-islam/", GitHub: "https://github.com/your-handle" },
+  email: "you@example.com",                       // ← put your real email here
+  bookingUrl: "https://www.linkedin.com/in/toufik-ul-islam/",   // ← swap for a Calendly link if you have one
+  bookingLabel: "Let’s Talk",
+  links: { LinkedIn: "https://www.linkedin.com/in/toufik-ul-islam/", GitHub: "https://github.com/Toufikul2022" },
 
   // Two-line titles that cycle in the hero
   roles: [
-    ["Technical", "Product Designer"],
-    ["Seasoned", "UX Designer"],
-    ["Experienced", "Product Manager"],
+    ["UI/UX", "Product Designer"],
+    ["Front-End", "Web Developer"],
     ["AI Product", "Builder"],
+    ["Digital", "Growth Marketer"],
   ],
 
   // Right-hand hero accordion: [heading, text]
   intro: [
-    ["Hi, I’m Toufik", "A one-line summary of who you are and what you do best."],
-    ["I design and build interfaces", "Describe the kind of products you craft — mobile, desktop, web — and for whom."],
-    ["Product design and front-end", "Your craft in one sentence: research, interaction, visual design, and the code to ship it."],
+    ["Hi, I’m Toufik", "A designer who builds — I take products from a rough idea to a working, polished interface."],
+    ["I design and build interfaces", "AI tools, SaaS dashboards, mobile apps and marketing websites, designed mobile-first and shipped in code."],
+    ["Design, code and growth", "Figma and user research, then React, Next.js and GSAP to ship it, with SEO and conversion in mind."],
   ],
 
-  logosTitle: "Led impactful initiatives at",
-  // Company logos for the curved carousel. Use { img: "logo.png", alt: "Company" } or a short text mark.
+  logosTitle: "Brands and products I’ve designed for",
+  // Text marks for the curved carousel. Use { img: "logo.png", alt: "Name" } to show a real logo.
   logos: [
-    { text: "Acme" }, { text: "Nova" }, { text: "Orbit" }, { text: "Peak" },
-    { text: "Lumen" }, { text: "Atlas" }, { text: "Vertex" }, { text: "Echo" },
+    { text: "A&M" }, { text: "VoiceIQ" }, { text: "TrustLayer" }, { text: "Style.Bd" },
+    { text: "SocialBoost" }, { text: "Sabbir LIVE" }, { text: "CRM" }, { text: "AI" },
   ],
 
-  galleryTitle: "Designed components and products rooted in user discovery, bridging raw customer insight with intuitive UI/UX and real functional requirements.",
-  // Gallery wall tiles. ratio = width / height. Add img or video to replace the placeholder colour.
+  galleryTitle: "Interfaces designed around real user needs, from AI dashboards and live-shopping apps to legal websites that turn complex rules into clear journeys.",
+  // Gallery wall tiles. ratio = width / height. Tap a tile to open it full size.
   gallery: [
-    { label: "Profile card", ratio: 241 / 388 }, { label: "Liquid toggle", ratio: 319 / 236 },
-    { label: "Dock", ratio: 414 / 276 }, { label: "Merch", ratio: 241 / 140 },
-    { label: "Website", ratio: 492 / 284 }, { label: "Search combobox", ratio: 494 / 480 },
-    { label: "Open Graph", ratio: 492 / 282 }, { label: "Voice tasks", ratio: 300 / 418 },
-    { label: "Notification stack", ratio: 434 / 418 }, { label: "Shift search", ratio: 240 / 418 },
-    { label: "Homepage", ratio: 662 / 418 }, { label: "Voice coworker", ratio: 324 / 418 },
-    { label: "Accordion", ratio: 324 / 418 }, { label: "AI chatbox", ratio: 326 / 418 },
-    { label: "Screen recording", ratio: 324 / 418 },
+    { label: "Style.Bd · Hero", img: "work/stylebd-hero.jpg", ratio: 477 / 896 },
+    { label: "VoiceIQ · Dashboard", img: "work/voiceiq-dashboard.jpg", ratio: 1240 / 770 },
+    { label: "SocialBoost AI · Hero", img: "work/socialboost-hero.jpg", ratio: 1240 / 783 },
+    { label: "A&M · Services", img: "work/amc-services.jpg", ratio: 1240 / 677 },
+    { label: "Sabbir LIVE · YouTube", img: "work/sabbir-youtube-mobile.jpg", ratio: 482 / 758 },
+    { label: "TrustLayer AI", img: "work/trustlayer-landing.jpg", ratio: 1240 / 765 },
+    { label: "Core competencies", img: "work/services-visual-standards.jpg", ratio: 1240 / 713 },
+    { label: "Style.Bd · Feed", img: "work/stylebd-feed.jpg", ratio: 353 / 661 },
+    { label: "CRM · Reports", img: "work/crm-reports.jpg", ratio: 1240 / 730 },
+    { label: "A&M · Manitoba PNP roadmap", img: "work/amc-pnp-roadmap.jpg", ratio: 1240 / 640 },
+    { label: "Sabbir LIVE · Let’s work together", img: "work/sabbir-footer.jpg", ratio: 1240 / 503 },
+    { label: "SocialBoost AI · Testimonials", img: "work/socialboost-testimonials.jpg", ratio: 480 / 726 },
+    { label: "VoiceIQ · Analytics", img: "work/voiceiq-analytics.jpg", ratio: 1240 / 762 },
+    { label: "A&M · Education pathways", img: "work/amc-education-infographic.jpg", ratio: 1240 / 887 },
+    { label: "Style.Bd · Messages", img: "work/stylebd-messages.jpg", ratio: 367 / 658 },
+    { label: "Sabbir LIVE · TikTok", img: "work/sabbir-tiktok.jpg", ratio: 1240 / 585 },
+    { label: "A&M · Lawyer profile & draws", img: "work/amc-lawyer-draws.jpg", ratio: 1200 / 932 },
+    { label: "CRM · Meetings", img: "work/crm-meetings.jpg", ratio: 1240 / 720 },
   ],
 
-  filters: ["AI and Agentics", "Websites", "SaaS", "Mobile App", "Design System"],
+  filters: ["AI and Agentics", "Websites", "SaaS", "Mobile App", "Dashboards"],
 
-  // Case studies. Optional: img / video (inner screen), backdropImg (card background).
+  // Case studies. img = inner screen, backdropImg = blurred card background.
   works: [
     {
-      title: "Project One. A short, sharp headline about the outcome.",
-      categories: ["AI and Agentics", "Mobile App"],
-      product: "Product category", type: "B2B SaaS", year: "2026",
-      prompt: "An example prompt a user would type…",
-      summary: "Two sentences on what you led, for whom, and how far you took it — from research to a shipped product.",
-      role: "Lead Product Designer",
-      detail: "Your scope and team: research, ideation, design system and prototyping.",
-      link: "#",
-      backdrop: ["#5b6b4f", "#c9b48a"],
-      features: [
-        ["Research.", "What you learned from users and what it changed."],
-        ["Key flow.", "The core interaction you redesigned and why it works."],
-        ["Smart feature.", "An AI or automation feature you designed."],
-        ["Design system.", "The foundation you set up so it could scale."],
-      ],
-    },
-    {
-      title: "Project Two. Designing an AI assistant that does the busy work.",
-      categories: ["AI and Agentics", "SaaS", "Design System"],
-      product: "Agentic platform", type: "B2B SaaS", year: "2025",
-      prompt: "Which customers haven’t returned in 3 weeks?",
-      summary: "Describe the surfaces you designed and the problem they solved for users.",
-      role: "Product Designer",
-      detail: "Worked from concept to high fidelity with the founder and engineering.",
-      link: "#",
-      backdrop: ["#3a4a6b", "#9fb4d9"],
-      features: [
-        ["Onboarding.", "From a cold landing to a working setup in a few steps."],
-        ["Dashboard.", "A view you can read at a glance."],
-        ["Ask the AI.", "Prompt starters drawn from real user needs."],
-        ["Voice & system.", "UX copy and tokens that hold the product together."],
-      ],
-    },
-    {
-      title: "Project Three. A website rebuilt around what customers care about.",
+      title: "A&M Canadian Immigration. Turning complex immigration law into clear, guided journeys.",
       categories: ["Websites"],
-      product: "Website rebuild", type: "Marketing site", year: "2024",
-      prompt: "21 findings, sorted by severity…",
-      summary: "Audited the old site, made the case for change, and shipped a redesign end to end.",
-      role: "Web Designer and Developer",
-      detail: "The fix was more about content than craft.",
-      link: "#",
-      backdrop: ["#6b3a3a", "#e0a98f"],
+      product: "Immigration Law Firm Website", type: "Legal · Winnipeg, MB", year: "2026",
+      prompt: "Case Law Library · 1,205 articles",
+      summary: "A full website for an immigration law corporation in Winnipeg: services, a searchable case-law library, live draw results and visual guides that explain each pathway to permanent residence.",
+      role: "UI/UX Designer and Web Developer",
+      detail: "Information architecture, content design, infographics and the front-end build.",
+      link: "work/amc-services.jpg",
+      img: "work/amc-services.jpg", fit: "contain", backdropImg: "work/amc-pnp-roadmap.jpg",
+      backdrop: ["#7a1d24", "#1d2b44"],
       features: [
-        ["Audit first.", "Logged and rated every issue so the team could triage."],
-        ["Clear offer.", "Rewrote the hero around what visitors actually worry about."],
-        ["Right theme.", "Chose a look that fits where and how people read it."],
-        ["One path.", "Proof up front, and every section leads to one CTA."],
+        ["Service map.", "Urgent cases, PR, temporary residence and US-to-Canada routes, grouped the way clients actually ask."],
+        ["Case-law library.", "1,200+ articles in clear categories, with news cards and a subscribe flow for updates."],
+        ["Visual pathways.", "Infographics and a Manitoba PNP roadmap that explain study, work and PR routes at a glance."],
+        ["Trust signals.", "Lawyer profile, Google reviews and draw-history tables placed where decisions are made."],
+      ],
+    },
+    {
+      title: "VoiceIQ. A command centre for AI voice agents that answer and make calls.",
+      categories: ["AI and Agentics", "SaaS", "Dashboards"],
+      product: "AI Voice Call Platform", type: "B2B SaaS", year: "2026",
+      prompt: "Dental Intake Bot · appointment booked",
+      summary: "A dashboard for teams running AI voice agents: live calls, inbound and outbound volume, outcomes like booked appointments and qualified leads, and per-agent analytics.",
+      role: "Product Designer",
+      detail: "Dashboard, live-call states, analytics and the navigation for agents, campaigns and contacts.",
+      link: "work/voiceiq-dashboard.jpg",
+      img: "work/voiceiq-dashboard.jpg", backdropImg: "work/voiceiq-analytics.jpg",
+      backdrop: ["#312e81", "#6d28d9"],
+      features: [
+        ["Live at a glance.", "Ringing, live and completed calls with clear status pills that refresh every 15 seconds."],
+        ["Outcome first.", "Appointments booked, leads qualified and transfers surface before raw call counts."],
+        ["Agent analytics.", "Call volume, conversion rate and outcome mix over the last 7 days."],
+        ["Built to scale.", "One sidebar for live calls, AI agents, campaigns, contacts and clients."],
+      ],
+    },
+    {
+      title: "Style.Bd. A live-shopping fashion app for Bangladesh.",
+      categories: ["Mobile App"],
+      product: "Fashion Live-Shopping App", type: "Mobile · E-commerce", year: "2026",
+      prompt: "Search fashion, beauty & more…",
+      summary: "A dark, content-first shopping app where verified sellers go live, shoppers browse trending looks, and orders, cart and messages stay one tap away.",
+      role: "UI/UX Designer",
+      detail: "End-to-end app flows: home, trends, live shopping, messages and the seller profile.",
+      link: "work/stylebd-screens.jpg",
+      img: "work/stylebd-screens.jpg", backdropImg: "work/stylebd-hero.jpg",
+      backdrop: ["#4a0d2e", "#be185d"],
+      features: [
+        ["Live shopping.", "Live badges, viewer counts and in-stream offers like “Eid Collection 2026 Launch”."],
+        ["Shop by category.", "Women, men, modest fashion and footwear, with trust cues for delivery and returns."],
+        ["Seller profile.", "Verified-seller badge and order status from pending to delivered in one glance."],
+        ["Messages.", "Chat with brands about orders and offers without leaving the app."],
+      ],
+    },
+    {
+      title: "SocialBoost AI. Scroll-stopping social posts, generated in seconds.",
+      categories: ["AI and Agentics", "SaaS", "Websites"],
+      product: "AI Social Content Generator", type: "B2C SaaS", year: "2026",
+      prompt: "Instagram · Promotional · Professional tone",
+      summary: "An AI tool that writes platform-ready posts for Instagram, Facebook, LinkedIn, X and TikTok, with a landing page built to convert free sign-ups.",
+      role: "Product Designer and Front-End Developer",
+      detail: "Landing page, generator flow, history and pricing, in light and dark themes.",
+      link: "work/socialboost-generator.jpg",
+      img: "work/socialboost-generator.jpg", backdropImg: "work/socialboost-hero.jpg",
+      backdrop: ["#1e1b4b", "#7c3aed"],
+      features: [
+        ["Guided generator.", "Pick a platform, post type and tone, and the empty state explains what happens next."],
+        ["Clear promise.", "A hero that sells the outcome, with no card required and 5 free posts a day."],
+        ["Social proof.", "Testimonial cards designed for mobile first."],
+        ["Every platform.", "Instagram, Facebook, LinkedIn, X and TikTok, each with its own format."],
+      ],
+    },
+    {
+      title: "Immigration CRM. One place for leads, deals, meetings and revenue.",
+      categories: ["SaaS", "Dashboards"],
+      product: "CRM for a Consultancy", type: "Internal tool", year: "2026",
+      prompt: "Lead source: Website 33% · Google Ads 22%",
+      summary: "A CRM that tracks every lead from first contact to signed client, with meetings, tasks and reports that show which channels actually bring revenue.",
+      role: "Product Designer",
+      detail: "Information architecture, calendar and reporting views.",
+      link: "work/crm-reports.jpg",
+      img: "work/crm-reports.jpg", backdropImg: "work/crm-meetings.jpg",
+      backdrop: ["#0f3d5e", "#2563eb"],
+      features: [
+        ["Pipeline.", "Leads, deals, clients and projects in one sidebar, in the order work flows."],
+        ["Meetings.", "Calendar and list views with one-click scheduling."],
+        ["Revenue reports.", "Total, forecast, win rate and average deal size up top."],
+        ["Channel insight.", "Lead-source chart with export on every report."],
+      ],
+    },
+    {
+      title: "TrustLayer AI. Making AI governance simple enough for any team.",
+      categories: ["AI and Agentics", "SaaS", "Websites"],
+      product: "AI Governance Platform", type: "B2B SaaS", year: "2026",
+      prompt: "Generate an AI usage policy…",
+      summary: "A landing page and product concept that helps companies document, comply with and communicate how they use AI.",
+      role: "Product Designer",
+      detail: "Positioning, feature architecture and the marketing site.",
+      link: "work/trustlayer-landing.jpg",
+      img: "work/trustlayer-landing.jpg",
+      backdrop: ["#3b0764", "#6366f1"],
+      features: [
+        ["AI tool registry.", "Every AI tool documented with risk and data-handling levels."],
+        ["Policy generator.", "A guided wizard for internal, client-facing or risk policies."],
+        ["Incident tracking.", "Log hallucinations, data issues and client complaints."],
+        ["Trust portal.", "A branded page that proves your AI governance to clients."],
+      ],
+    },
+    {
+      title: "Sabbir LIVE. A bold home for a creator’s videos across every platform.",
+      categories: ["Websites"],
+      product: "Creator Website", type: "Media · Personal brand", year: "2026",
+      prompt: "All my videos. One place.",
+      summary: "A high-contrast website that brings a creator’s Facebook Reels, YouTube Shorts and TikTok videos together, with a simple path to follow or collaborate.",
+      role: "Web Designer and Developer",
+      detail: "Visual identity, responsive layouts and the contact flow.",
+      link: "work/sabbir-videos-hero.jpg",
+      img: "work/sabbir-videos-hero.jpg", backdropImg: "work/sabbir-mobile-screens.jpg",
+      backdrop: ["#111111", "#991b1b"],
+      features: [
+        ["One hub.", "Facebook, TikTok and YouTube feeds, newest first."],
+        ["Mobile first.", "Big type and thumb-friendly follow buttons for each platform."],
+        ["Brand voice.", "Condensed headlines and LIVE-red accents throughout."],
+        ["Collaborations.", "A “Let’s work together” section and contact form for brands."],
       ],
     },
   ],
 
+  // Smaller pieces. Each opens the full image in a new tab.
   experiments: [
-    { title: "Experiment One", text: "A small interactive build — what it does and what you used to make it.", url: "#" },
-    { title: "Component Library", text: "A set of animated UI components you designed and coded.", url: "#" },
-    { title: "Side Project", text: "Something you made for fun or to learn a new tool.", url: "#" },
+    { title: "Immigration infographics", text: "Visual guides that map temporary-resident and education pathways to permanent residence.", img: "work/amc-temporary-resident-infographic.jpg", url: "work/amc-education-infographic.jpg", cta: "View full size" },
+    { title: "Core competencies page", text: "A dark, editorial services section: UI/UX, web development, digital marketing and brand strategy.", img: "work/services-visual-standards.jpg", url: "work/services-visual-standards.jpg", cta: "View full size" },
+    { title: "Sabbir LIVE on mobile", text: "YouTube Shorts and Facebook Reels hubs designed for one-handed scrolling.", img: "work/sabbir-mobile-screens.jpg", url: "work/sabbir-mobile-screens.jpg", cta: "View full size" },
   ],
 
   // Quick answers for the "Ask me anything" box (keywords → answer)
   faq: [
-    { q: "What do you do?", keys: ["do", "work", "job", "role"], a: "I design and build digital products — from user research to shipped interface." },
-    { q: "Where are you based?", keys: ["where", "based", "live", "location", "city"], a: "I’m based in Your City, and I work with teams remotely." },
-    { q: "Are you available?", keys: ["available", "hire", "freelance", "free"], a: "Yes — I’m open to new projects. Book a call or email me." },
-    { q: "How can I contact you?", keys: ["contact", "email", "reach", "call"], a: "Email me at you@example.com or use the Book a Call button at the top." },
+    { q: "What do you do?", keys: ["do", "work", "job", "role", "services"], a: "I design and build digital products: UI/UX design, front-end development, and growth through SEO and conversion." },
+    { q: "What have you built?", keys: ["built", "projects", "portfolio", "made", "examples"], a: "AI dashboards like VoiceIQ, SocialBoost AI and TrustLayer, the Style.Bd shopping app, a CRM, and websites for A&M Canadian Immigration and Sabbir LIVE. Scroll up to Works." },
+    { q: "Which tools do you use?", keys: ["tools", "stack", "tech", "figma", "react"], a: "Figma for design and prototyping; React, Next.js, Vite and GSAP for building; plus SEO and analytics tools for growth." },
+    { q: "Are you available?", keys: ["available", "hire", "freelance", "free"], a: "Yes, I’m open to new projects. Message me on LinkedIn to get started." },
+    { q: "How can I contact you?", keys: ["contact", "email", "reach", "call", "linkedin"], a: "The quickest way is LinkedIn. Use the “Let’s Talk” button at the top." },
   ],
 
-  aboutHeadline: "I also code, speak a few languages, and love sports.",
+  aboutHeadline: "I design, build and grow digital products.",
   aboutText: [
-    "I’m Toufik, a short introduction about your background and how you got into this work.",
-    "Outside of work, a line about your hobbies and what you’re tinkering with lately.",
+    "I’m Toufik, a UI/UX designer and front-end developer. I work across the whole journey: understanding users, designing the interface in Figma, and building it with React and Next.js.",
+    "My work spans AI tools, SaaS dashboards, mobile commerce and websites for law firms and creators. Because I also work in SEO and digital marketing, I design with conversion in mind, not just looks.",
   ],
   // Three photos for the collage: [left, middle (tall), right]
   photos: [
-    { alt: "Photo of you outdoors" }, { img: "me.jpg", alt: "Portrait of Toufik", pos: "52% 30%" }, { alt: "A favourite travel photo" },
+    { img: "work/stylebd-screens.jpg", alt: "Style.Bd app screens" },
+    { img: "me.jpg", alt: "Portrait of Toufik", pos: "52% 30%" },
+    { img: "work/socialboost-mobile.jpg", alt: "SocialBoost AI on mobile" },
   ],
 
-  // [role, organisation, place, years]
+  // [role, organisation, place, years]  ← replace with your real history from LinkedIn
   journey: [
-    ["Lead Product Designer", "Freelancer", "Your City", "2025–Now"],
-    ["Founding Product Designer", "Company Name", "City, Country", "2023–25"],
-    ["Cofounder, CPO", "Startup Name", "City, Country", "2021–23"],
-    ["Product Manager", "Company Name", "City, Country", "2019–21"],
-    ["Master’s degree", "University Name", "City, Country", "2015–17"],
+    ["UI/UX Designer & Web Developer", "A&M Canadian Immigration Law Corp.", "Winnipeg, MB", "2026"],
+    ["Product Designer · AI SaaS", "VoiceIQ · SocialBoost AI · TrustLayer AI", "Remote", "2026"],
+    ["Mobile App Designer", "Style.Bd", "Bangladesh", "2026"],
+    ["Web Designer & Developer", "Sabbir LIVE", "Remote", "2026"],
   ],
 
-  // Stack logos use Simple Icons slugs (https://simpleicons.org)
-  stack: ["figma", "sketch", "notion", "clickup", "miro", "claude", "github", "gitlab", "storybook", "vercel", "framer", "webflow", "shopify", "supabase", "cloudflare", "mixpanel", "googleanalytics", "react"],
+  // Stack logos: [Simple Icons slug (https://simpleicons.org), name]
+  stack: [["figma", "Figma"], ["react", "React"], ["nextdotjs", "Next.js"], ["vite", "Vite"], ["greensock", "GSAP"], ["tailwindcss", "Tailwind"],
+    ["javascript", "JavaScript"], ["typescript", "TypeScript"], ["html5", "HTML5"], ["css", "CSS"], ["wordpress", "WordPress"], ["github", "GitHub"],
+    ["vercel", "Vercel"], ["googleanalytics", "Analytics"], ["googleads", "Google Ads"], ["meta", "Meta Ads"], ["canva", "Canva"], ["claude", "Claude"]],
 
   skills: [
-    ["Data & Analytics", "GA, SQL, Mixpanel, Tableau, Amplitude, A/B Testing"],
-    ["AI & Interaction Design", "Human-in-the-Loop, Prompt UX, Generative UI, Copilots, Agentic Workflows"],
-    ["Design Systems", "Tokens, Micro-interactions, Dashboards, Prototyping, Accessibility, Figma, Framer, Storybook"],
-    ["Research", "User Interviews, Usability Testing, Maze, Surveys"],
-    ["Product Strategy", "Product-Led Growth, Pricing, Churn Reduction, Go-To-Market"],
+    ["UI/UX Design", "Figma, Prototyping, User Research, Mobile-first Layouts, Design Systems"],
+    ["Web Development", "React, Next.js, Vite, GSAP, Tailwind, Responsive Front-end"],
+    ["AI Products", "AI Dashboards, Generative Content Tools, Voice Agents, AI Governance"],
+    ["Digital Marketing", "SEO, Ads, Conversion Rate Optimisation, Growth, Analytics"],
+    ["Brand Strategy", "Logo Design, Typography, Brand Books, Visual Identity"],
   ],
 
   quote: { text: "Design is not just what it looks like and feels like. Design is how it works", by: "Steve Jobs" },
@@ -755,7 +847,7 @@ const ICONS = {
   about: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   stack: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
 };
-const SECTIONS = [["home", "Home"], ["work", "Work"], ["experiments", "Experiments"], ["about", "About"], ["stack", "Stack"]];
+const SECTIONS = [["home", "Home"], ["work", "Work"], ["experiments", "More Work"], ["about", "About"], ["stack", "Stack"]];
 const navPill = $("#navPill"), rail = $("#rail");
 SECTIONS.forEach(([id, label]) => {
   navPill.append(el("a", { href: "#" + id, class: "nav-item", title: label },
@@ -895,7 +987,7 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
   box.setAttribute("aria-label", SITE.logosTitle);
   const nodes = SITE.logos.map(l => {
     const d = el("div", { class: "logo" });
-    d.innerHTML = l.img ? `<img src="${esc(l.img)}" alt="${esc(l.alt || "")}" draggable="false">` : `<span>${esc(l.text)}</span>`;
+    d.innerHTML = l.img ? `<img src="${esc(l.img)}" alt="${esc(l.alt || "")}" draggable="false">` : `<span style="font-size:${Math.min(44, 300 / l.text.length)}px">${esc(l.text)}</span>`;
     box.append(d); return d;
   });
   const n = nodes.length, step = 0.42;
@@ -934,7 +1026,7 @@ SITE.gallery.forEach((g, i) => {
   const t = el("figure", { class: "tile" });
   t.style.aspectRatio = g.ratio;
   if (g.video) t.innerHTML = `<video src="${esc(g.video)}" muted playsinline loop autoplay aria-label="${esc(g.label)}"></video>`;
-  else if (g.img) t.innerHTML = `<img src="${esc(g.img)}" alt="${esc(g.label)}" loading="lazy">`;
+  else if (g.img) t.innerHTML = `<a href="${esc(g.img)}" target="_blank" rel="noopener" aria-label="${esc(g.label)} (opens full size)"><img src="${esc(g.img)}" alt="${esc(g.label)}" loading="lazy"></a>`;
   else { const [a, b] = HUES[i % HUES.length]; t.style.background = `linear-gradient(145deg, ${a}, ${b})`; t.innerHTML = `<figcaption class="ph">${esc(g.label)}</figcaption>`; }
   $("#wall").append(t);
 });
@@ -950,7 +1042,7 @@ const tagOf = c => "#" + c.replace(/\s+/g, "");
 const LOADER = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-opacity=".15" stroke-width="2"/><path d="M8 1.5A6.5 6.5 0 0 1 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 SITE.works.forEach((w, i) => {
   const media = w.video ? `<video src="${esc(w.video)}" muted playsinline loop autoplay aria-label="${esc(w.product)}"></video>`
-    : w.img ? `<img src="${esc(w.img)}" alt="${esc(w.product)}" loading="lazy">` : `<span class="ph">Add a screenshot or video</span>`;
+    : w.img ? `<img src="${esc(w.img)}" alt="${esc(w.product)}" loading="lazy"${w.fit ? ` style="object-fit:${esc(w.fit)};background:#fff"` : ""}>` : `<span class="ph">Add a screenshot or video</span>`;
   const bg = w.backdropImg ? `<img src="${esc(w.backdropImg)}" alt="">` : "";
   $("#works").append(el("article", { class: "work", "aria-labelledby": "w" + i, "data-cats": w.categories.join("|") }, `
     <div class="frame">
@@ -974,7 +1066,7 @@ SITE.works.forEach((w, i) => {
           <div class="meta">
             <p class="muted">Role: ${esc(w.role)}</p>
             <p>${esc(w.detail)}</p>
-            <a class="cta" href="${esc(w.link)}"><span class="cta-chip" aria-hidden="true">${ARROW}</span><span class="cta-text">Learn more<span class="sr-only"> about ${esc(w.product)}</span></span></a>
+            <a class="cta" href="${esc(w.link)}" target="_blank" rel="noopener"><span class="cta-chip" aria-hidden="true">${ARROW}</span><span class="cta-text">Learn more<span class="sr-only"> about ${esc(w.product)}</span></span></a>
           </div>
         </div>
       </div>
@@ -1005,7 +1097,7 @@ function typeOut(span) {
 SITE.experiments.forEach(x => $("#exps").append(el("li", { class: "exp reveal" }, `
   <div class="screen">${x.video ? `<video src="${esc(x.video)}" muted playsinline loop autoplay></video>` : x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph">Preview</span>`}</div>
   <div class="exp-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p>
-  <a class="pill" href="${esc(x.url)}" target="_blank" rel="noopener">Give it a try<span class="sr-only"> (opens ${esc(x.title)} in a new tab)</span></a></div>`)));
+  <a class="pill" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.cta || "Give it a try")}<span class="sr-only"> (opens ${esc(x.title)} in a new tab)</span></a></div>`)));
 
 /* ---------- Ask me anything ---------- */
 (function ask() {
@@ -1034,9 +1126,9 @@ SITE.aboutText.forEach(p => { const e = el("p"); e.textContent = p; $("#aboutTex
     <div class="col"><div class="photo-sq" aria-hidden="true"></div><div class="photo short" role="img" aria-label="${esc(c.alt)}">${ph(c)}</div></div>`;
 })();
 SITE.journey.forEach(([r, o, p, y]) => $("#journey").append(el("li", {}, `<span class="role">${esc(r)}</span><span class="org">${esc(o)}</span><span>${esc(p)}</span><span>${esc(y)}</span>`)));
-SITE.stack.forEach(s => {
-  const li = el("li", { title: s }, `<img class="mono" src="https://cdn.simpleicons.org/${s}/111111" alt="${s}" loading="lazy"><img class="color" src="https://cdn.simpleicons.org/${s}" alt="" loading="lazy">`);
-  li.querySelector(".mono").onerror = () => { li.className = "txt"; li.textContent = s; }; // show the name if the icon can't load
+SITE.stack.forEach(([slug, name]) => {
+  const li = el("li", { title: name }, `<img class="mono" src="https://cdn.simpleicons.org/${slug}/111111" alt="${esc(name)}" loading="lazy"><img class="color" src="https://cdn.simpleicons.org/${slug}" alt="" loading="lazy">`);
+  li.querySelector(".mono").onerror = () => { li.className = "txt"; li.textContent = name; }; // show the name if the icon can't load
   $("#stackLogos").append(li);
 });
 // Light up one stack logo at a time as a gentle shimmer
