@@ -373,7 +373,7 @@ main { position: relative; isolation: isolate; }
 .stack-logos li:hover .color, .stack-logos li.lit .color { opacity: 1; }
 :root[data-theme="dark"] .stack-logos .mono { filter: invert(1); }
 /* Rotating 3D skill network */
-.skill-graph { position: relative; margin-top: 64px; height: clamp(440px, 62vw, 680px); }
+.skill-graph { position: relative; margin-top: 64px; height: clamp(460px, 64vw, 720px); }
 .skill-graph canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 .skill-graph canvas:active { cursor: grabbing; }
 
@@ -1231,91 +1231,133 @@ SITE.stack.forEach(([slug, name]) => {
 if (!reduced) { let i = 0; setInterval(() => { const li = $("#stackLogos").children; if (!li.length) return; [...li].forEach(x => x.classList.remove("lit")); li[i++ % li.length].classList.add("lit"); }, 900); }
 SITE.skills.forEach(([h, list]) => $("#skillsSr").append(el("li", {}, `${esc(h)}: ${esc(list)}`)));
 
-/* 3D skill network: the first skill group sits in the centre, the others on a slowly spinning sphere */
+/* 3D skill globe: the first skill group sits in the core, the others are spread evenly over a spinning sphere.
+   Every surface link follows the curve of the globe (great-circle arcs). */
 (function skillGraph() {
   const cv = $("#graph"), ctx = cv.getContext("2d");
   const groups = SITE.skills.map(([h, list]) => ({ h, items: list.split(",").map(x => x.trim()) }));
-  let seed = 7; const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // stable layout on every load
+  let seed = 11; const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // same layout on every load
   const norm = v => { const l = Math.hypot(...v); return v.map(c => c / l); };
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const slerp = (a, b, t) => {                                   // point t of the way along the arc a→b on the unit sphere
+    const d = Math.min(1, Math.max(-1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])), om = Math.acos(d);
+    if (om < 1e-4) return a; const s1 = Math.sin((1 - t) * om) / Math.sin(om), s2 = Math.sin(t * om) / Math.sin(om);
+    return a.map((v, i) => v * s1 + b[i] * s2);
+  };
   const nodes = [], links = [], stars = [];
-  const add = (p, label, g, hub) => (nodes.push({ p, label, g, hub }), nodes.length - 1);
-  // centre hub and its skills (straight, faint spokes)
-  const c = add([0, 0, 0], groups[0].h, 0, true);
-  groups[0].items.forEach(t => {
-    const d = norm([rand() - .5, (rand() - .5) * .8, rand() - .5]), r = .45 + rand() * .4;
-    links.push([c, add(d.map(x => x * r), t, 0, false), "spoke"]);
+  const add = (p, label, g, kind) => (nodes.push({ p, label, g, kind }), nodes.length - 1);
+
+  // core group: hub at the centre, its skills on an inner shell
+  const core = add([0, 0, 0], groups[0].h, 0, "core");
+  groups[0].items.forEach((t, k, arr) => {                      // Fibonacci spread so the inner shell is even too
+    const y = 1 - (k + .5) / arr.length * 2, r = Math.sqrt(1 - y * y), th = k * 2.39996;
+    links.push([core, add([Math.cos(th) * r * .5, y * .5, Math.sin(th) * r * .5], t, 0, "inner"), "spoke"]);
   });
-  // outer hubs spread around the sphere, each with its skills clustered nearby (curved links)
-  const outer = groups.slice(1).map((g, k, arr) => {
-    const th = (k / arr.length) * Math.PI * 2 + .4, ph = (k % 2 ? -.42 : .38);
-    const hub = add([Math.cos(ph) * Math.cos(th), Math.sin(ph), Math.cos(ph) * Math.sin(th)], g.h, k + 1, true);
-    g.items.forEach(t => {
-      const d = norm(nodes[hub].p.map(x => x + (rand() - .5) * 1.3));
-      links.push([hub, add(d.map(x => x * (.92 + rand() * .12)), t, k + 1, false), "arc"]);
+  // outer groups on evenly spaced points of the sphere (tetrahedron for four groups)
+  const outerN = groups.length - 1;
+  const spots = outerN === 4 ? [[1, 1, 1], [-1, -1, 1], [-1, 1, -1], [1, -1, -1]].map(norm)
+    : Array.from({ length: outerN }, (_, k) => { const y = 1 - (k + .5) / outerN * 2, r = Math.sqrt(1 - y * y), th = k * 2.39996; return [Math.cos(th) * r, y, Math.sin(th) * r]; });
+  const hubs = groups.slice(1).map((g, k) => {
+    const c = spots[k], hub = add(c, g.h, k + 1, "hub");
+    // skills sit in a ring around their hub, on the sphere surface
+    const u = norm(cross(c, Math.abs(c[1]) < .9 ? [0, 1, 0] : [1, 0, 0])), v = cross(c, u);
+    g.items.forEach((t, j) => {
+      const a = j / g.items.length * Math.PI * 2 + rand() * .4, ring = .42 + (j % 2) * .16;
+      const p = norm(c.map((x, i) => x * Math.cos(ring) + (u[i] * Math.cos(a) + v[i] * Math.sin(a)) * Math.sin(ring)));
+      const leaf = add(p, t, k + 1, "leaf");
+      links.push([hub, leaf, "arc"]);
+      if (j) links.push([leaf - 1, leaf, "ring"]);              // a faint ring joining neighbouring skills
     });
-    links.push([c, hub, "spoke"]);
+    links.push([core, hub, "spoke"]);
     return hub;
   });
-  outer.forEach((h, k) => { links.push([h, outer[(k + 1) % outer.length], "arc"]); if (k % 2 === 0) links.push([h, outer[(k + 2) % outer.length], "arc"]); });
-  for (let k = 0; k < 140; k++) { const d = norm([rand() - .5, rand() - .5, rand() - .5]); stars.push(d.map(x => x * (1.15 + rand() * .9))); }
+  hubs.forEach((a, i) => hubs.forEach((b, j) => { if (j > i) links.push([a, b, "arc"]); }));
+  for (let k = 0; k < 160; k++) stars.push(norm([rand() - .5, rand() - .5, rand() - .5]).map(x => x * (1.25 + rand() * .9)));
+  // wireframe: three latitudes and six meridians
+  const wire = [];
+  [-.55, 0, .55].forEach(y => { const r = Math.sqrt(1 - y * y); wire.push(Array.from({ length: 65 }, (_, i) => { const a = i / 64 * Math.PI * 2; return [Math.cos(a) * r, y, Math.sin(a) * r]; })); });
+  for (let m = 0; m < 6; m++) { const th = m / 6 * Math.PI; wire.push(Array.from({ length: 65 }, (_, i) => { const a = i / 64 * Math.PI * 2; return [Math.cos(a) * Math.cos(th), Math.sin(a), Math.cos(a) * Math.sin(th)]; })); }
 
-  let w = 0, h = 0, R = 1, ang = .6, vel = 0, tilt = -.18, hover = -1, drag = null, onScreen = false, fg = "10,10,10";
+  let w = 0, h = 0, R = 1, ang = .5, vel = 0, tilt = -.32, hover = -1, drag = null, onScreen = false, fg = "10,10,10";
   // read the theme's --fg token directly (the body colour is mid-transition when the theme flips)
   const readColor = () => { const hx = getComputedStyle(root).getPropertyValue("--fg").trim().replace("#", ""); if (hx.length === 6) fg = [0, 2, 4].map(i => parseInt(hx.slice(i, i + 2), 16)).join(","); };
   readColor(); new MutationObserver(readColor).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
   function size() {
     const dpr = Math.min(devicePixelRatio, 2); w = cv.clientWidth; h = cv.clientHeight;
     cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    R = Math.min(w * (w < 560 ? .36 : .4), h * .42);
+    R = Math.min(w * (w < 560 ? .42 : .4), h * .38);
   }
   function proj([x, y, z]) {
     const ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(tilt), st = Math.sin(tilt);
-    const x1 = x * ca + z * sa, z1 = -x * sa + z * ca;          // spin around the vertical axis
-    const y2 = y * ct - z1 * st, z2 = y * st + z1 * ct;          // slight forward tilt
-    const f = 3.2 / (3.2 - z2);
+    const x1 = x * ca + z * sa, z1 = -x * sa + z * ca;
+    const y2 = y * ct - z1 * st, z2 = y * st + z1 * ct;
+    const f = 4 / (4 - z2);
     return { x: w / 2 + x1 * R * f, y: h / 2 + y2 * R * f, z: z2, f };
+  }
+  const depth = z => .18 + .82 * (z + 1) / 2;
+  function path(pts, alpha) {                                   // draw a 3D polyline segment by segment so the back fades
+    let prev = proj(pts[0]);
+    for (let i = 1; i < pts.length; i++) {
+      const q = proj(pts[i]);
+      ctx.strokeStyle = `rgba(${fg},${alpha * depth((prev.z + q.z) / 2)})`;
+      ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); ctx.stroke(); prev = q;
+    }
   }
   function draw() {
     ctx.clearRect(0, 0, w, h);
-    const P = nodes.map(n => proj(n.p)), hg = hover >= 0 ? nodes[hover].g : -1;
-    const depth = z => .25 + .75 * (z + 1) / 2;
-    const dim = g => hg < 0 || g === hg ? 1 : .18;
-    for (const st of stars) { const q = proj(st); ctx.fillStyle = `rgba(${fg},${.12 + .25 * depth(q.z / 2)})`; ctx.fillRect(q.x, q.y, 1.4 * q.f, 1.4 * q.f); }
+    const hg = hover >= 0 ? nodes[hover].g : -1, dim = g => hg < 0 || g === hg ? 1 : .15;
+    // soft halo and rim make the globe read as round
+    const halo = ctx.createRadialGradient(w / 2, h / 2, R * .2, w / 2, h / 2, R * 1.12);
+    halo.addColorStop(0, `rgba(${fg},0)`); halo.addColorStop(.82, `rgba(${fg},.035)`); halo.addColorStop(1, `rgba(${fg},0)`);
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(w / 2, h / 2, R * 1.12, 0, 7); ctx.fill();
+    ctx.strokeStyle = `rgba(${fg},.14)`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(w / 2, h / 2, R * 1.005, 0, 7); ctx.stroke();
+    for (const st of stars) { const q = proj(st); ctx.fillStyle = `rgba(${fg},${.1 + .3 * depth(q.z / 2)})`; ctx.beginPath(); ctx.arc(q.x, q.y, .9 * q.f, 0, 7); ctx.fill(); }
+    ctx.lineWidth = .8; wire.forEach(l => path(l, .07));
     ctx.lineWidth = 1;
     for (const [a, b, kind] of links) {
-      const A = P[a], B = P[b], g = nodes[b].g, al = (kind === "spoke" ? .16 : .32) * depth((A.z + B.z) / 2) * dim(nodes[a].hub && nodes[b].hub ? hg < 0 ? g : -2 : g);
-      ctx.strokeStyle = `rgba(${fg},${al})`; ctx.beginPath(); ctx.moveTo(A.x, A.y);
-      if (kind === "arc") {                                         // bow the curve outward from the centre
-        const m = nodes[a].p.map((v, i) => (v + nodes[b].p[i]) / 2), l = Math.hypot(...m) || 1, C = proj(m.map(v => v / l * 1.12));
-        ctx.quadraticCurveTo(C.x, C.y, B.x, B.y);
-      } else ctx.lineTo(B.x, B.y);
-      ctx.stroke();
+      const A = nodes[a], B = nodes[b], g = B.kind === "hub" && A.kind === "hub" ? -1 : B.g;
+      const al = { spoke: .14, arc: .38, ring: .16 }[kind] * (g < 0 ? (hg < 0 ? 1 : .3) : dim(g));
+      if (kind === "spoke") { const P = proj(A.p), Q = proj(B.p); ctx.strokeStyle = `rgba(${fg},${al * depth(Q.z)})`; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(Q.x, Q.y); ctx.stroke(); }
+      else path(Array.from({ length: 17 }, (_, i) => slerp(A.p, B.p, i / 16)), al);
     }
+    const P = nodes.map(n => proj(n.p));
     nodes.map((n, i) => i).sort((a, b) => P[a].z - P[b].z).forEach(i => {
-      const n = nodes[i], q = P[i], d = depth(q.z) * dim(n.g), big = n.hub && i !== c;
-      ctx.fillStyle = `rgba(${fg},${(big ? .85 : .7) * d})`;
-      ctx.beginPath(); ctx.arc(q.x, q.y, (big ? 7 : n.hub ? 4 : 3.6) * q.f, 0, 7); ctx.fill();
-      ctx.font = `${n.hub ? 500 : 400} ${n.hub ? (w < 560 ? 12 : 14) : (w < 560 ? 9.5 : 11)}px Geist, system-ui, sans-serif`;
-      ctx.textAlign = "center"; ctx.fillStyle = `rgba(${fg},${(n.hub ? .95 : .55) * d})`;
-      // on small screens, only label skills on the front of the globe (or in the hovered group)
-      if (n.hub || w >= 560 || q.z > .25 || (hg >= 0 && n.g === hg)) { const half = ctx.measureText(n.label).width / 2 + 4; ctx.fillText(n.label, Math.min(w - half, Math.max(half, q.x)), q.y + (big ? 20 : 15)); }
+      const n = nodes[i], q = P[i], d = depth(q.z) * dim(n.g);
+      const r = ({ hub: 7, core: 5, leaf: 3.6, inner: 2.8 })[n.kind] * q.f;
+      if (n.kind === "hub") {                                   // glow behind group hubs
+        const gl = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, r * 3.2);
+        gl.addColorStop(0, `rgba(${fg},${.18 * d})`); gl.addColorStop(1, `rgba(${fg},0)`);
+        ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(q.x, q.y, r * 3.2, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = `rgba(${fg},${(n.kind === "inner" ? .45 : .85) * d})`;
+      ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fill();
+      const isGroup = n.kind === "hub" || n.kind === "core";
+      if (!(isGroup || w >= 560 || q.z > .25 || (hg >= 0 && n.g === hg))) return;   // small screens: label the front only
+      ctx.font = `${isGroup ? 500 : 400} ${isGroup ? (w < 560 ? 12 : 14) : (w < 560 ? 9.5 : 11)}px Geist, system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.fillStyle = `rgba(${fg},${(isGroup ? .95 : .6) * d})`;
+      const half = ctx.measureText(n.label).width / 2 + 4;
+      ctx.fillText(n.label, Math.min(w - half, Math.max(half, q.x)), q.y + r + 12);
     });
     return P;
   }
   let last = [];
   function frame() {
     if (onScreen) {
-      if (!drag) { ang += (reduced ? 0 : .0022) + vel; vel *= .95; }
+      if (!drag) { ang += (reduced ? 0 : .0024) + vel; vel *= .95; }
       last = draw();
     }
     requestAnimationFrame(frame);
   }
-  cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, a: ang }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, a: ang, t: tilt }; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener("pointermove", e => {
     const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    if (drag) { const na = drag.a + (e.clientX - drag.x) / 180; vel = (na - ang) * .4; ang = na; return; }
+    if (drag) {
+      const na = drag.a + (e.clientX - drag.x) / 180; vel = (na - ang) * .4; ang = na;
+      tilt = Math.max(-1.1, Math.min(1.1, drag.t - (e.clientY - drag.y) / 220));   // drag up/down to tip the globe
+      return;
+    }
     let best = -1, bd = 14;
-    last.forEach((q, i) => { const dd = Math.hypot(q.x - x, q.y - y); if (dd < bd && q.z > -.6) { bd = dd; best = i; } });
+    last.forEach((q, i) => { const dd = Math.hypot(q.x - x, q.y - y); if (dd < bd && q.z > -.5) { bd = dd; best = i; } });
     hover = best;
   });
   const up = () => { drag = null; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
