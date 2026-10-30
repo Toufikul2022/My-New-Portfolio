@@ -344,7 +344,13 @@ main { position: relative; isolation: isolate; }
 .photo.short { height: 300px; }
 .photo.tall { height: 480px; }
 @media (min-width: 768px) { .photo.tall { height: 100%; } }
-.photo-sq { display: none; width: 160px; height: 160px; border-radius: 20px; background: var(--secondary); }
+.photo-sq { display: none; width: 160px; height: 160px; flex-shrink: 0; }
+/* Collage slides: cross-fade with a slow zoom; a lone image breathes in and out */
+.photo .pslide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; will-change: transform, opacity; }
+.photo .pslide.on { opacity: 1; animation: pzoom 7.5s ease-in-out forwards; }
+.photo .pslide.solo { opacity: 1; animation: pzoom 9s ease-in-out infinite alternate; }
+@keyframes pzoom { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .photo .pslide.on, .photo .pslide.solo { animation: none; } }
 @media (min-width: 768px) { .photo-sq { display: block; } }
 @media (hover: hover) {
   .photos:has(.photo:hover) .photo { opacity: .6; filter: blur(3px); }
@@ -816,10 +822,14 @@ const SITE = {
     "My work spans AI tools, SaaS dashboards, mobile commerce and websites for law firms and creators. Because I also work in SEO and digital marketing, I design with conversion in mind, not just looks.",
   ],
   // Three photos for the collage: [left, middle (tall), right]
+  // Collage slots: [left, middle (tall), right, small square 1, small square 2].
+  // A slot with several imgs cross-fades between them; a single img gently zooms.
   photos: [
-    { img: "work/stylebd-screens.jpg", alt: "Style.Bd app screens" },
-    { img: "me.jpg", alt: "Portrait of Toufik", pos: "52% 30%" },
-    { img: "work/socialboost-mobile.jpg", alt: "SocialBoost AI on mobile" },
+    { imgs: ["work/stylebd-screens.jpg", "work/sabbir-mobile-screens.jpg", "work/stylebd-screens-2.jpg"], alt: "App screens from Style.Bd and Sabbir LIVE" },
+    { imgs: ["me.jpg"], alt: "Portrait of Toufik", pos: "52% 30%" },
+    { imgs: ["work/socialboost-mobile.jpg", "work/voiceiq-dashboard.jpg", "work/crm-reports.jpg"], alt: "SocialBoost AI, VoiceIQ and CRM screens" },
+    { imgs: ["work/services-visual-standards.jpg", "work/trustlayer-landing.jpg", "work/sabbir-tiktok.jpg"], pos: "left top" },
+    { imgs: ["work/amc-pnp-roadmap.jpg", "work/socialboost-hero.jpg", "work/amc-education-infographic.jpg"], pos: "center" },
   ],
 
   // [role, organisation, place, years]  ← replace with your real history from LinkedIn
@@ -1214,12 +1224,31 @@ SITE.experiments.forEach(x => $("#exps").append(el("li", { class: "exp reveal" }
 $("#aboutHeadline").textContent = SITE.aboutHeadline;
 SITE.aboutText.forEach(p => { const e = el("p"); e.textContent = p; $("#aboutText").append(e); });
 (function photos() {
-  const ph = p => p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" style="--pos:${esc(p.pos || "center")}">` : `<span class="ph">${esc(p.alt)}</span>`;
-  const [a, b, c] = SITE.photos;
+  const imgsOf = p => p ? (p.imgs || (p.img ? [p.img] : [])) : [];
+  const ph = p => {
+    const list = imgsOf(p);
+    if (!list.length) return p && p.alt ? `<span class="ph">${esc(p.alt)}</span>` : "";
+    return list.map((src, k) => `<img class="pslide${list.length === 1 ? " solo" : k === 0 ? " on" : ""}" src="${esc(src)}" alt="" loading="lazy" style="--pos:${esc(p.pos || "center")}">`).join("");
+  };
+  const slot = (p, cls) => p && p.alt ? `<div class="photo ${cls}" role="img" aria-label="${esc(p.alt)}">${ph(p)}</div>` : `<div class="photo ${cls}" aria-hidden="true">${ph(p)}</div>`;
+  const [a, b, c, d, e] = SITE.photos;
   $("#photos").innerHTML = `
-    <div class="col"><div class="photo short" role="img" aria-label="${esc(a.alt)}">${ph(a)}</div><div class="photo-sq" aria-hidden="true"></div></div>
-    <div class="photo tall" role="img" aria-label="${esc(b.alt)}">${ph(b)}</div>
-    <div class="col"><div class="photo-sq" aria-hidden="true"></div><div class="photo short" role="img" aria-label="${esc(c.alt)}">${ph(c)}</div></div>`;
+    <div class="col">${slot(a, "short")}${slot(d, "photo-sq")}</div>
+    ${slot(b, "tall")}
+    <div class="col">${slot(e, "photo-sq")}${slot(c, "short")}</div>`;
+  if (reduced) return;
+  // each slot with several images cross-fades on its own clock, staggered so they never all change at once
+  const box = $("#photos"); let visible = false;
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(box);
+  [...box.querySelectorAll(".photo")].forEach((ph, k) => {
+    const slides = [...ph.querySelectorAll(".pslide")]; if (slides.length < 2) return;
+    let i = 0;
+    setTimeout(() => setInterval(() => {
+      if (!visible) return;
+      slides[i].classList.remove("on"); i = (i + 1) % slides.length;
+      const s = slides[i]; s.style.animation = "none"; s.offsetWidth; s.style.animation = ""; s.classList.add("on");
+    }, 6000), [0, 1500, 3000, 4500, 2200][k % 5]);
+  });
 })();
 SITE.journey.forEach(([r, o, p, y]) => $("#journey").append(el("li", {}, `<span class="role">${esc(r)}</span><span class="org">${esc(o)}</span><span>${esc(p)}</span><span>${esc(y)}</span>`)));
 SITE.stack.forEach(([slug, name]) => {
