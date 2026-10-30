@@ -372,10 +372,10 @@ main { position: relative; isolation: isolate; }
 .stack-logos li:hover .mono, .stack-logos li.lit .mono { opacity: 0; }
 .stack-logos li:hover .color, .stack-logos li.lit .color { opacity: 1; }
 :root[data-theme="dark"] .stack-logos .mono { filter: invert(1); }
-.skills { display: grid; gap: 28px; margin-top: 64px; }
-.skills h4 { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
-.skills .chips span { padding: 6px 12px; border-radius: 999px; font-size: 13px; background: var(--secondary); color: var(--muted); transition: color .2s, background-color .2s; }
-.skills .chips span:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, var(--secondary)); }
+/* Rotating 3D skill network */
+.skill-graph { position: relative; margin-top: 64px; height: clamp(440px, 62vw, 680px); }
+.skill-graph canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.skill-graph canvas:active { cursor: grabbing; }
 
 /* ---------- Footer ---------- */
 footer { overflow: clip; padding: 0 24px; }
@@ -571,7 +571,10 @@ footer { overflow: clip; padding: 0 24px; }
         <div id="stack">
           <h3 class="h3">My Stack</h3>
           <ul class="stack-logos" id="stackLogos"></ul>
-          <div class="skills" id="skills"></div>
+          <figure class="skill-graph">
+            <canvas id="graph" aria-hidden="true"></canvas>
+            <figcaption class="sr-only"><ul id="skillsSr"></ul></figcaption>
+          </figure>
         </div>
       </div>
     </div>
@@ -833,10 +836,10 @@ const SITE = {
     ["vercel", "Vercel"], ["googleanalytics", "Analytics"], ["googleads", "Google Ads"], ["meta", "Meta Ads"], ["canva", "Canva"], ["claude", "Claude"]],
 
   skills: [
-    ["UI/UX Design", "Figma, Prototyping, User Research, Mobile-first Layouts, Design Systems"],
+    ["UI/UX Design & Design Systems", "Figma, Prototyping, User Research, Wireframing, Mobile-first Layouts, Design Tokens, Micro-interactions, Accessibility, Usability Testing, Dashboards"],
     ["Web Development", "React, Next.js, Vite, GSAP, Tailwind, Responsive Front-end"],
-    ["AI Products", "AI Dashboards, Generative Content Tools, Voice Agents, AI Governance"],
-    ["Digital Marketing", "SEO, Ads, Conversion Rate Optimisation, Growth, Analytics"],
+    ["AI Products", "AI Dashboards, Generative Content Tools, Voice Agents, Agentic Workflows, Prompt UX, AI Governance"],
+    ["Digital Marketing", "SEO, Google Ads, Meta Ads, Conversion Rate Optimisation, Growth, Analytics"],
     ["Brand Strategy", "Logo Design, Typography, Brand Books, Visual Identity"],
   ],
 
@@ -1226,7 +1229,102 @@ SITE.stack.forEach(([slug, name]) => {
 });
 // Light up one stack logo at a time as a gentle shimmer
 if (!reduced) { let i = 0; setInterval(() => { const li = $("#stackLogos").children; if (!li.length) return; [...li].forEach(x => x.classList.remove("lit")); li[i++ % li.length].classList.add("lit"); }, 900); }
-SITE.skills.forEach(([h, list]) => $("#skills").append(el("div", { class: "reveal" }, `<h4>${esc(h)}</h4><div class="chips">${list.split(",").map(s => `<span>${esc(s.trim())}</span>`).join("")}</div>`)));
+SITE.skills.forEach(([h, list]) => $("#skillsSr").append(el("li", {}, `${esc(h)}: ${esc(list)}`)));
+
+/* 3D skill network: the first skill group sits in the centre, the others on a slowly spinning sphere */
+(function skillGraph() {
+  const cv = $("#graph"), ctx = cv.getContext("2d");
+  const groups = SITE.skills.map(([h, list]) => ({ h, items: list.split(",").map(x => x.trim()) }));
+  let seed = 7; const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // stable layout on every load
+  const norm = v => { const l = Math.hypot(...v); return v.map(c => c / l); };
+  const nodes = [], links = [], stars = [];
+  const add = (p, label, g, hub) => (nodes.push({ p, label, g, hub }), nodes.length - 1);
+  // centre hub and its skills (straight, faint spokes)
+  const c = add([0, 0, 0], groups[0].h, 0, true);
+  groups[0].items.forEach(t => {
+    const d = norm([rand() - .5, (rand() - .5) * .8, rand() - .5]), r = .45 + rand() * .4;
+    links.push([c, add(d.map(x => x * r), t, 0, false), "spoke"]);
+  });
+  // outer hubs spread around the sphere, each with its skills clustered nearby (curved links)
+  const outer = groups.slice(1).map((g, k, arr) => {
+    const th = (k / arr.length) * Math.PI * 2 + .4, ph = (k % 2 ? -.42 : .38);
+    const hub = add([Math.cos(ph) * Math.cos(th), Math.sin(ph), Math.cos(ph) * Math.sin(th)], g.h, k + 1, true);
+    g.items.forEach(t => {
+      const d = norm(nodes[hub].p.map(x => x + (rand() - .5) * 1.3));
+      links.push([hub, add(d.map(x => x * (.92 + rand() * .12)), t, k + 1, false), "arc"]);
+    });
+    links.push([c, hub, "spoke"]);
+    return hub;
+  });
+  outer.forEach((h, k) => { links.push([h, outer[(k + 1) % outer.length], "arc"]); if (k % 2 === 0) links.push([h, outer[(k + 2) % outer.length], "arc"]); });
+  for (let k = 0; k < 140; k++) { const d = norm([rand() - .5, rand() - .5, rand() - .5]); stars.push(d.map(x => x * (1.15 + rand() * .9))); }
+
+  let w = 0, h = 0, R = 1, ang = .6, vel = 0, tilt = -.18, hover = -1, drag = null, onScreen = false, fg = "10,10,10";
+  // read the theme's --fg token directly (the body colour is mid-transition when the theme flips)
+  const readColor = () => { const hx = getComputedStyle(root).getPropertyValue("--fg").trim().replace("#", ""); if (hx.length === 6) fg = [0, 2, 4].map(i => parseInt(hx.slice(i, i + 2), 16)).join(","); };
+  readColor(); new MutationObserver(readColor).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  function size() {
+    const dpr = Math.min(devicePixelRatio, 2); w = cv.clientWidth; h = cv.clientHeight;
+    cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    R = Math.min(w * (w < 560 ? .36 : .4), h * .42);
+  }
+  function proj([x, y, z]) {
+    const ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(tilt), st = Math.sin(tilt);
+    const x1 = x * ca + z * sa, z1 = -x * sa + z * ca;          // spin around the vertical axis
+    const y2 = y * ct - z1 * st, z2 = y * st + z1 * ct;          // slight forward tilt
+    const f = 3.2 / (3.2 - z2);
+    return { x: w / 2 + x1 * R * f, y: h / 2 + y2 * R * f, z: z2, f };
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const P = nodes.map(n => proj(n.p)), hg = hover >= 0 ? nodes[hover].g : -1;
+    const depth = z => .25 + .75 * (z + 1) / 2;
+    const dim = g => hg < 0 || g === hg ? 1 : .18;
+    for (const st of stars) { const q = proj(st); ctx.fillStyle = `rgba(${fg},${.12 + .25 * depth(q.z / 2)})`; ctx.fillRect(q.x, q.y, 1.4 * q.f, 1.4 * q.f); }
+    ctx.lineWidth = 1;
+    for (const [a, b, kind] of links) {
+      const A = P[a], B = P[b], g = nodes[b].g, al = (kind === "spoke" ? .16 : .32) * depth((A.z + B.z) / 2) * dim(nodes[a].hub && nodes[b].hub ? hg < 0 ? g : -2 : g);
+      ctx.strokeStyle = `rgba(${fg},${al})`; ctx.beginPath(); ctx.moveTo(A.x, A.y);
+      if (kind === "arc") {                                         // bow the curve outward from the centre
+        const m = nodes[a].p.map((v, i) => (v + nodes[b].p[i]) / 2), l = Math.hypot(...m) || 1, C = proj(m.map(v => v / l * 1.12));
+        ctx.quadraticCurveTo(C.x, C.y, B.x, B.y);
+      } else ctx.lineTo(B.x, B.y);
+      ctx.stroke();
+    }
+    nodes.map((n, i) => i).sort((a, b) => P[a].z - P[b].z).forEach(i => {
+      const n = nodes[i], q = P[i], d = depth(q.z) * dim(n.g), big = n.hub && i !== c;
+      ctx.fillStyle = `rgba(${fg},${(big ? .85 : .7) * d})`;
+      ctx.beginPath(); ctx.arc(q.x, q.y, (big ? 7 : n.hub ? 4 : 3.6) * q.f, 0, 7); ctx.fill();
+      ctx.font = `${n.hub ? 500 : 400} ${n.hub ? (w < 560 ? 12 : 14) : (w < 560 ? 9.5 : 11)}px Geist, system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.fillStyle = `rgba(${fg},${(n.hub ? .95 : .55) * d})`;
+      // on small screens, only label skills on the front of the globe (or in the hovered group)
+      if (n.hub || w >= 560 || q.z > .25 || (hg >= 0 && n.g === hg)) { const half = ctx.measureText(n.label).width / 2 + 4; ctx.fillText(n.label, Math.min(w - half, Math.max(half, q.x)), q.y + (big ? 20 : 15)); }
+    });
+    return P;
+  }
+  let last = [];
+  function frame() {
+    if (onScreen) {
+      if (!drag) { ang += (reduced ? 0 : .0022) + vel; vel *= .95; }
+      last = draw();
+    }
+    requestAnimationFrame(frame);
+  }
+  cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, a: ang }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (drag) { const na = drag.a + (e.clientX - drag.x) / 180; vel = (na - ang) * .4; ang = na; return; }
+    let best = -1, bd = 14;
+    last.forEach((q, i) => { const dd = Math.hypot(q.x - x, q.y - y); if (dd < bd && q.z > -.6) { bd = dd; best = i; } });
+    hover = best;
+  });
+  const up = () => { drag = null; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  cv.addEventListener("pointerleave", () => { hover = -1; });
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(cv);
+  new ResizeObserver(size).observe(cv); size();
+  if (document.fonts) document.fonts.ready.then(() => onScreen && draw());
+  frame();
+})();
 
 /* ---------- Footer ---------- */
 (function footer() {
