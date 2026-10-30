@@ -70,7 +70,44 @@ ul { list-style: none; }
   backdrop-filter: blur(40px) saturate(2); -webkit-backdrop-filter: blur(40px) saturate(2);
 }
 .site-header { position: fixed; top: 24px; inset-inline: 0; z-index: 50; display: flex; justify-content: center; padding: 0 8px; pointer-events: none; }
-.header-inner { pointer-events: auto; display: flex; align-items: center; gap: 8px; max-width: 100%; }
+.header-inner { pointer-events: auto; position: relative; display: flex; align-items: center; gap: 8px; max-width: 100%; }
+
+/* ---------- Work mega menu ---------- */
+.mega { position: absolute; top: calc(100% + 12px); left: 50%; width: min(760px, calc(100vw - 16px)); display: grid; grid-template-columns: 250px 1fr;
+  border-radius: 24px; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 30px 80px -30px rgb(0 0 0 / .35), 0 2px 6px rgb(0 0 0 / .04);
+  opacity: 0; visibility: hidden; transform: translate(-50%, -8px) scale(.985); transform-origin: top center;
+  transition: opacity .22s ease, transform .28s cubic-bezier(.22,1,.36,1), visibility 0s .28s; overflow: hidden; }
+.mega.open { opacity: 1; visibility: visible; transform: translate(-50%, 0) scale(1); transition: opacity .22s ease, transform .28s cubic-bezier(.22,1,.36,1); }
+.mega::before { content: ""; position: absolute; left: 0; right: 0; top: -14px; height: 14px; }   /* hover bridge from the nav */
+.mega-list { padding: 22px 0 18px 24px; border-right: 1px solid var(--border); max-height: min(520px, 70vh); overflow-y: auto; }
+.mega-list h5 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
+.mega-list h5:first-child { margin-top: 0; }
+.mega-list a { display: block; padding: 6px 0; font-size: 19px; line-height: 1.35; color: color-mix(in srgb, var(--fg) 55%, transparent); transition: color .18s, transform .25s cubic-bezier(.22,1,.36,1); }
+.mega-list a:hover, .mega-list a.on, .mega-list a:focus-visible { color: var(--fg); transform: translateX(4px); }
+.mega-side { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.mega-prev { position: relative; flex: 1; min-height: 260px; border-radius: 18px; overflow: hidden; background: #0b0b0f; isolation: isolate; }
+.mega-prev .bg { position: absolute; inset: 0; z-index: -1; transition: opacity .5s; }
+.mega-prev .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(8 8 12 / .92) 30%, rgb(8 8 12 / .35)); }
+.mega-txt { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); width: 40%; color: #fff; z-index: 2; }
+.mega-txt small { font-size: 10px; letter-spacing: .12em; opacity: .55; font-family: ui-monospace, monospace; }
+.mega-txt b { display: block; font-size: var(--fs, 30px); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; margin: 6px 0 8px; }
+.mega-txt p { font-size: 12px; line-height: 1.45; opacity: .75; }
+.mega-txt b, .mega-txt p, .mega-txt small { transition: opacity .3s, transform .35s cubic-bezier(.22,1,.36,1); }
+.mega-prev.swap .mega-txt b, .mega-prev.swap .mega-txt p, .mega-prev.swap .mega-txt small { opacity: 0; transform: translateY(6px); }
+.mega-card { position: absolute; right: -4%; top: 15%; width: 60%; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: #fff;
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / .7), 0 0 0 1px rgb(255 255 255 / .12); animation: megaFloat 6s ease-in-out infinite; transition: opacity .35s; }
+.mega-prev.swap .mega-card { opacity: 0; }
+@keyframes megaFloat { 0%, 100% { transform: perspective(900px) rotateY(-18deg) rotateX(5deg) translateY(0); } 50% { transform: perspective(900px) rotateY(-11deg) rotateX(2deg) translateY(-8px); } }
+.mega-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0; transition: opacity .8s; }
+.mega-card img.on { opacity: 1; animation: kenburns 3.2s ease-in-out forwards; }
+.mega-dash { position: absolute; left: 28px; bottom: 22px; display: flex; gap: 6px; z-index: 2; }
+.mega-dash i { width: 22px; height: 2px; background: rgb(255 255 255 / .25); overflow: hidden; }
+.mega-dash i::after { content: ""; display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+.mega-dash i.done::after { transform: scaleX(1); }
+.mega-dash i.run::after { animation: seg 3.2s linear forwards; }
+.mega-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+@media (max-width: 767px) { .mega { display: none; } }
+@media (prefers-reduced-motion: reduce) { .mega-card { animation: none; transform: perspective(900px) rotateY(-14deg); } .mega-card img.on { animation: none; } }
 .nav-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; min-height: 52px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
 .nav-item { position: relative; isolation: isolate; display: inline-flex; align-items: center; height: 44px; min-width: 44px; padding: 0 14px; border-radius: 999px; font-weight: 500; color: color-mix(in srgb, var(--fg) 70%, transparent); transition: color .15s; flex-shrink: 0; }
 .nav-item::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 999px; background: color-mix(in srgb, var(--secondary) 80%, transparent); opacity: 0; transition: opacity .25s; }
@@ -81,6 +118,10 @@ ul { list-style: none; }
 .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
 .nav-label { display: inline-block; overflow: hidden; white-space: nowrap; max-width: 0; opacity: 0; filter: blur(3px); transform: translateX(-4px); transition: max-width .35s ease, opacity .25s, filter .25s, transform .25s, margin .35s; }
 .nav-item.active .nav-label { max-width: 120px; opacity: 1; filter: none; transform: none; margin-left: 8px; }
+@media (hover: hover) and (min-width: 768px) {
+  .nav-pill:hover .nav-item:hover .nav-label { max-width: 120px; opacity: 1; filter: none; transform: none; margin-left: 8px; }
+  .nav-item:hover::before { opacity: .7; }
+}
 .round-btn { width: 52px; height: 52px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0; color: color-mix(in srgb, var(--fg) 80%, transparent); }
 .round-btn:hover { color: var(--fg); }
 .round-btn svg { width: 18px; height: 18px; }
@@ -1179,6 +1220,66 @@ document.querySelectorAll(".player").forEach(pl => {
   moveCursor(screen.clientWidth * .5, screen.clientHeight * .6);
   new IntersectionObserver(([e]) => e.isIntersecting ? play() : pause(), { threshold: .25 }).observe(screen);
 });
+
+/* Work mega menu: hover "Work" to browse projects; the preview's screenshot floats and cycles */
+(function megaMenu() {
+  const work = navPill.querySelector('a[href="#work"]'); if (!work || !SITE.works.length) return;
+  const mega = el("div", { class: "mega", id: "mega", role: "region", "aria-label": "Projects" });
+  const short = w => w.title.split(". ")[0];
+  const order = [...SITE.filters, ...new Set(SITE.works.map(w => w.menu || w.categories[0]))];
+  const groups = [...new Set(order)].map(g => [g, SITE.works.map((w, i) => ({ w, i })).filter(x => (x.w.menu || x.w.categories[0]) === g)]).filter(([, l]) => l.length);
+  mega.innerHTML = `<nav class="mega-list" aria-label="Projects">${groups.map(([g, l]) => `<h5>${esc(g)}</h5>${l.map(({ w, i }) => `<a href="#w${i}" data-i="${i}">${esc(short(w))}</a>`).join("")}`).join("")}</nav>
+    <div class="mega-side"><div class="mega-prev"><div class="bg"></div>
+      <div class="mega-txt"><small></small><b></b><p></p></div>
+      <div class="mega-card"></div><div class="mega-dash"></div></div>
+      <div class="mega-meta"><span></span><span></span></div></div>`;
+  work.parentElement.parentElement.append(mega);
+  const prev = mega.querySelector(".mega-prev"), card = mega.querySelector(".mega-card"), dash = mega.querySelector(".mega-dash");
+  const links = [...mega.querySelectorAll(".mega-list a")], total = String(SITE.works.length).padStart(2, "0");
+  let cur = -1, cycle, swapT, closeT;
+  function screensOf(w) { return (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? x : x.src); }
+  function step(imgs, segs, k) {
+    imgs.forEach((im, j) => im.classList.toggle("on", j === k));
+    const im = imgs[k]; im.style.animation = "none"; im.offsetWidth; im.style.animation = "";
+    segs.forEach((g, j) => g.className = j < k ? "done" : "");
+    segs[k].offsetWidth; segs[k].className = "run";
+    cycle = setTimeout(() => step(imgs, segs, (k + 1) % imgs.length), 3200);
+  }
+  function show(i) {
+    if (i === cur) return; cur = i;
+    const w = SITE.works[i];
+    links.forEach(a => a.classList.toggle("on", +a.dataset.i === i));
+    clearTimeout(cycle); clearTimeout(swapT); prev.classList.add("swap");
+    swapT = setTimeout(() => {
+      const shots = screensOf(w);
+      mega.querySelector(".bg").style.background = `linear-gradient(160deg, ${w.backdrop[0]}, ${w.backdrop[1]})`;
+      mega.querySelector(".mega-txt small").textContent = `${String(i + 1).padStart(2, "0")} / ${total}`;
+      const nb = mega.querySelector(".mega-txt b"); nb.textContent = short(w); nb.style.setProperty("--fs", short(w).length > 14 ? "23px" : "30px");
+      mega.querySelector(".mega-txt p").textContent = w.product;
+      mega.querySelector(".mega-meta span:first-child").textContent = `${w.product} · ${w.type}`;
+      mega.querySelector(".mega-meta span:last-child").textContent = w.year;
+      card.innerHTML = shots.map(src => `<img src="${esc(src)}" alt="">`).join("");
+      dash.innerHTML = shots.map(() => "<i></i>").join("");
+      prev.classList.remove("swap");
+      if (shots.length) step([...card.children], [...dash.children], 0);
+    }, cur === i && prev.querySelector("img") ? 160 : 0);
+  }
+  const open = () => { clearTimeout(closeT); if (!matchMedia("(min-width: 768px)").matches) return; if (cur < 0) show(+links[0].dataset.i); mega.classList.add("open"); work.setAttribute("aria-expanded", "true"); };
+  const close = () => { closeT = setTimeout(() => { mega.classList.remove("open"); work.setAttribute("aria-expanded", "false"); clearTimeout(cycle); cur = -1; }, 160); };
+  work.setAttribute("aria-controls", "mega"); work.setAttribute("aria-expanded", "false");
+  [work, mega].forEach(n => { n.addEventListener("pointerenter", open); n.addEventListener("pointerleave", close); n.addEventListener("focusin", open); n.addEventListener("focusout", close); });
+  addEventListener("keydown", e => { if (e.key === "Escape") { mega.classList.remove("open"); clearTimeout(cycle); cur = -1; } });
+  links.forEach(a => {
+    a.addEventListener("pointerenter", () => show(+a.dataset.i));
+    a.addEventListener("focus", () => show(+a.dataset.i));
+    a.addEventListener("click", e => {                          // jump to the case study; reveal it if a filter hid it
+      e.preventDefault(); const art = document.getElementById("w" + a.dataset.i).closest(".work");
+      if (art.hidden) $("#filters button").click();
+      mega.classList.remove("open"); clearTimeout(cycle); cur = -1;
+      art.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    });
+  });
+})();
 
 /* Filters */
 (function filters() {
