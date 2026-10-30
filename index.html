@@ -79,7 +79,7 @@ ul { list-style: none; }
   transition: opacity .22s ease, transform .28s cubic-bezier(.22,1,.36,1), visibility 0s .28s; overflow: hidden; }
 .mega.open { opacity: 1; visibility: visible; transform: translate(-50%, 0) scale(1); transition: opacity .22s ease, transform .28s cubic-bezier(.22,1,.36,1); }
 .mega::before { content: ""; position: absolute; left: 0; right: 0; top: -14px; height: 14px; }   /* hover bridge from the nav */
-.mega-list { padding: 22px 0 18px 24px; border-right: 1px solid var(--border); max-height: min(520px, 70vh); overflow-y: auto; }
+.mega-list { padding: 22px 20px 18px 24px; border-right: 1px solid var(--border); max-height: min(520px, 70vh); overflow-y: auto; }
 .mega-list h5 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
 .mega-list h5:first-child { margin-top: 0; }
 .mega-list a { display: block; padding: 6px 0; font-size: 19px; line-height: 1.35; color: color-mix(in srgb, var(--fg) 55%, transparent); transition: color .18s, transform .25s cubic-bezier(.22,1,.36,1); }
@@ -842,10 +842,14 @@ const SITE = {
   ],
 
   // Smaller pieces. Each opens the full image in a new tab.
+  // menu = group in the "More Work" hover menu; screens = images its preview cycles through
   experiments: [
-    { title: "Immigration infographics", text: "Visual guides that map temporary-resident and education pathways to permanent residence.", img: "work/amc-temporary-resident-infographic.jpg", url: "work/amc-education-infographic.jpg", cta: "View full size" },
-    { title: "Core competencies page", text: "A dark, editorial services section: UI/UX, web development, digital marketing and brand strategy.", img: "work/services-visual-standards.jpg", url: "work/services-visual-standards.jpg", cta: "View full size" },
-    { title: "Sabbir LIVE on mobile", text: "YouTube Shorts and Facebook Reels hubs designed for one-handed scrolling.", img: "work/sabbir-mobile-screens.jpg", url: "work/sabbir-mobile-screens.jpg", cta: "View full size" },
+    { title: "Immigration infographics", text: "Visual guides that map temporary-resident and education pathways to permanent residence.", img: "work/amc-temporary-resident-infographic.jpg", url: "work/amc-education-infographic.jpg", cta: "View full size",
+      menu: "Infographics", subtitle: "Pathways to permanent residence", screens: ["work/amc-temporary-resident-infographic.jpg", "work/amc-education-infographic.jpg", "work/amc-pnp-roadmap.jpg"], backdrop: ["#1d2b44", "#7a1d24"] },
+    { title: "Core competencies page", text: "A dark, editorial services section: UI/UX, web development, digital marketing and brand strategy.", img: "work/services-visual-standards.jpg", url: "work/services-visual-standards.jpg", cta: "View full size",
+      menu: "Branding", subtitle: "Editorial services section", screens: ["work/services-visual-standards.jpg", "work/sabbir-footer.jpg"], backdrop: ["#1a0f0a", "#c2410c"] },
+    { title: "Sabbir LIVE on mobile", text: "YouTube Shorts and Facebook Reels hubs designed for one-handed scrolling.", img: "work/sabbir-mobile-screens.jpg", url: "work/sabbir-mobile-screens.jpg", cta: "View full size",
+      menu: "Mobile", subtitle: "Shorts and Reels hubs", screens: ["work/sabbir-mobile-screens.jpg", "work/sabbir-tiktok.jpg"], backdrop: ["#111111", "#991b1b"] },
   ],
 
   // Quick answers for the "Ask me anything" box (keywords → answer)
@@ -1221,23 +1225,23 @@ document.querySelectorAll(".player").forEach(pl => {
   new IntersectionObserver(([e]) => e.isIntersecting ? play() : pause(), { threshold: .25 }).observe(screen);
 });
 
-/* Work mega menu: hover "Work" to browse projects; the preview's screenshot floats and cycles */
-(function megaMenu() {
-  const work = navPill.querySelector('a[href="#work"]'); if (!work || !SITE.works.length) return;
-  const mega = el("div", { class: "mega", id: "mega", role: "region", "aria-label": "Projects" });
-  const short = w => w.title.split(". ")[0];
-  const order = [...SITE.filters, ...new Set(SITE.works.map(w => w.menu || w.categories[0]))];
-  const groups = [...new Set(order)].map(g => [g, SITE.works.map((w, i) => ({ w, i })).filter(x => (x.w.menu || x.w.categories[0]) === g)]).filter(([, l]) => l.length);
-  mega.innerHTML = `<nav class="mega-list" aria-label="Projects">${groups.map(([g, l]) => `<h5>${esc(g)}</h5>${l.map(({ w, i }) => `<a href="#w${i}" data-i="${i}">${esc(short(w))}</a>`).join("")}`).join("")}</nav>
+/* Hover mega menus: "Work" lists the case studies, "More Work" the smaller pieces.
+   The preview's screenshot floats in 3D and cycles through that item's screens. */
+const megaMenus = [];
+function megaMenu(href, items, label) {
+  const trigger = navPill.querySelector(`a[href="${href}"]`); if (!trigger || !items.length) return;
+  const id = "mega-" + href.slice(1);
+  const mega = el("div", { class: "mega", id, role: "region", "aria-label": label });
+  const groups = [...new Set(items.map(x => x.group))].map(g => [g, items.map((x, i) => ({ x, i })).filter(o => o.x.group === g)]);
+  mega.innerHTML = `<nav class="mega-list" aria-label="${esc(label)}">${groups.map(([g, l]) => `<h5>${esc(g)}</h5>${l.map(({ x, i }) => `<a href="#${esc(x.target)}" data-i="${i}">${esc(x.name)}</a>`).join("")}`).join("")}</nav>
     <div class="mega-side"><div class="mega-prev"><div class="bg"></div>
       <div class="mega-txt"><small></small><b></b><p></p></div>
       <div class="mega-card"></div><div class="mega-dash"></div></div>
       <div class="mega-meta"><span></span><span></span></div></div>`;
-  work.parentElement.parentElement.append(mega);
+  trigger.parentElement.parentElement.append(mega);
   const prev = mega.querySelector(".mega-prev"), card = mega.querySelector(".mega-card"), dash = mega.querySelector(".mega-dash");
-  const links = [...mega.querySelectorAll(".mega-list a")], total = String(SITE.works.length).padStart(2, "0");
+  const links = [...mega.querySelectorAll(".mega-list a")], total = String(items.length).padStart(2, "0");
   let cur = -1, cycle, swapT, closeT;
-  function screensOf(w) { return (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? x : x.src); }
   function step(imgs, segs, k) {
     imgs.forEach((im, j) => im.classList.toggle("on", j === k));
     const im = imgs[k]; im.style.animation = "none"; im.offsetWidth; im.style.animation = "";
@@ -1246,40 +1250,56 @@ document.querySelectorAll(".player").forEach(pl => {
     cycle = setTimeout(() => step(imgs, segs, (k + 1) % imgs.length), 3200);
   }
   function show(i) {
-    if (i === cur) return; cur = i;
-    const w = SITE.works[i];
+    if (i === cur) return;
+    const first = cur < 0; cur = i;
+    const x = items[i];
     links.forEach(a => a.classList.toggle("on", +a.dataset.i === i));
     clearTimeout(cycle); clearTimeout(swapT); prev.classList.add("swap");
     swapT = setTimeout(() => {
-      const shots = screensOf(w);
-      mega.querySelector(".bg").style.background = `linear-gradient(160deg, ${w.backdrop[0]}, ${w.backdrop[1]})`;
+      mega.querySelector(".bg").style.background = `linear-gradient(160deg, ${x.colors[0]}, ${x.colors[1]})`;
       mega.querySelector(".mega-txt small").textContent = `${String(i + 1).padStart(2, "0")} / ${total}`;
-      const nb = mega.querySelector(".mega-txt b"); nb.textContent = short(w); nb.style.setProperty("--fs", short(w).length > 14 ? "23px" : "30px");
-      mega.querySelector(".mega-txt p").textContent = w.product;
-      mega.querySelector(".mega-meta span:first-child").textContent = `${w.product} · ${w.type}`;
-      mega.querySelector(".mega-meta span:last-child").textContent = w.year;
-      card.innerHTML = shots.map(src => `<img src="${esc(src)}" alt="">`).join("");
-      dash.innerHTML = shots.map(() => "<i></i>").join("");
+      const nb = mega.querySelector(".mega-txt b"); nb.textContent = x.name; nb.style.setProperty("--fs", x.name.length > 14 ? "23px" : "30px");
+      mega.querySelector(".mega-txt p").textContent = x.desc;
+      mega.querySelector(".mega-meta span:first-child").textContent = x.meta;
+      mega.querySelector(".mega-meta span:last-child").textContent = x.right || "";
+      card.innerHTML = x.shots.map(src => `<img src="${esc(src)}" alt="">`).join("");
+      dash.innerHTML = x.shots.map(() => "<i></i>").join("");
       prev.classList.remove("swap");
-      if (shots.length) step([...card.children], [...dash.children], 0);
-    }, cur === i && prev.querySelector("img") ? 160 : 0);
+      if (x.shots.length) step([...card.children], [...dash.children], 0);
+    }, first ? 0 : 160);
   }
-  const open = () => { clearTimeout(closeT); if (!matchMedia("(min-width: 768px)").matches) return; if (cur < 0) show(+links[0].dataset.i); mega.classList.add("open"); work.setAttribute("aria-expanded", "true"); };
-  const close = () => { closeT = setTimeout(() => { mega.classList.remove("open"); work.setAttribute("aria-expanded", "false"); clearTimeout(cycle); cur = -1; }, 160); };
-  work.setAttribute("aria-controls", "mega"); work.setAttribute("aria-expanded", "false");
-  [work, mega].forEach(n => { n.addEventListener("pointerenter", open); n.addEventListener("pointerleave", close); n.addEventListener("focusin", open); n.addEventListener("focusout", close); });
-  addEventListener("keydown", e => { if (e.key === "Escape") { mega.classList.remove("open"); clearTimeout(cycle); cur = -1; } });
+  const hide = () => { mega.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); clearTimeout(cycle); cur = -1; };
+  const open = () => {
+    clearTimeout(closeT); if (!matchMedia("(min-width: 768px)").matches) return;
+    megaMenus.forEach(m => m !== hide && m());                 // only one menu open at a time
+    if (cur < 0) show(+links[0].dataset.i); mega.classList.add("open"); trigger.setAttribute("aria-expanded", "true");
+  };
+  const close = () => { closeT = setTimeout(hide, 160); };
+  megaMenus.push(hide);
+  trigger.setAttribute("aria-controls", id); trigger.setAttribute("aria-expanded", "false");
+  [trigger, mega].forEach(n => { n.addEventListener("pointerenter", open); n.addEventListener("pointerleave", close); n.addEventListener("focusin", open); n.addEventListener("focusout", close); });
+  addEventListener("keydown", e => { if (e.key === "Escape") hide(); });
   links.forEach(a => {
     a.addEventListener("pointerenter", () => show(+a.dataset.i));
     a.addEventListener("focus", () => show(+a.dataset.i));
-    a.addEventListener("click", e => {                          // jump to the case study; reveal it if a filter hid it
-      e.preventDefault(); const art = document.getElementById("w" + a.dataset.i).closest(".work");
-      if (art.hidden) $("#filters button").click();
-      mega.classList.remove("open"); clearTimeout(cycle); cur = -1;
-      art.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    a.addEventListener("click", e => {
+      e.preventDefault(); const x = items[+a.dataset.i]; hide();
+      const target = x.before ? x.before() : document.getElementById(x.target);
+      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: x.block || "start" });
     });
   });
-})();
+}
+const shotsOf = w => (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? x : x.src);
+const workGroupOrder = [...new Set([...SITE.filters, ...SITE.works.map(w => w.menu || w.categories[0])])];
+megaMenu("#work", SITE.works.map((w, i) => ({
+  group: w.menu || w.categories[0], name: w.title.split(". ")[0], desc: w.product,
+  meta: `${w.product} · ${w.type}`, right: w.year, colors: w.backdrop, shots: shotsOf(w), target: "w" + i,
+  before: () => { const art = document.getElementById("w" + i).closest(".work"); if (art.hidden) $("#filters button").click(); return art; },   // un-filter if hidden
+})).sort((a, b) => workGroupOrder.indexOf(a.group) - workGroupOrder.indexOf(b.group)), "Projects");
+megaMenu("#experiments", SITE.experiments.map((x, k) => ({
+  group: x.menu || "More work", name: x.title, desc: x.subtitle || x.text, meta: `More Work · ${x.menu || "Exploration"}`, right: `${k + 1} of ${SITE.experiments.length}`,
+  colors: x.backdrop || ["#18181b", "#3f3f46"], shots: x.screens || [x.img], target: "x" + k, block: "center",
+})), "More work");
 
 /* Filters */
 (function filters() {
@@ -1301,7 +1321,7 @@ function typeOut(span) {
 }
 
 /* ---------- Experiments ---------- */
-SITE.experiments.forEach(x => $("#exps").append(el("li", { class: "exp reveal" }, `
+SITE.experiments.forEach((x, k) => $("#exps").append(el("li", { class: "exp reveal", id: "x" + k }, `
   <div class="screen">${x.video ? `<video src="${esc(x.video)}" muted playsinline loop autoplay></video>` : x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph">Preview</span>`}</div>
   <div class="exp-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p>
   <a class="pill" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.cta || "Give it a try")}<span class="sr-only"> (opens ${esc(x.title)} in a new tab)</span></a></div>`)));
