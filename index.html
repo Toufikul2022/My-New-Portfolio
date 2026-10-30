@@ -216,10 +216,17 @@ main { position: relative; isolation: isolate; }
 
 /* Gallery wall */
 .wall-outer { display: flex; justify-content: center; padding: 24px 10px; }
-.wall { width: 100%; max-width: 1024px; max-height: 800px; overflow-y: auto; border-radius: 24px; border: 1px solid var(--line); background: color-mix(in srgb, var(--secondary) 30%, transparent); padding: 12px; }
-.wall-grid { columns: 2; column-gap: 12px; }
-@media (min-width: 768px) { .wall-grid { columns: 3; } }
-.tile { break-inside: avoid; margin-bottom: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--secondary); overflow: hidden; position: relative; }
+.wall { width: 100%; max-width: 1024px; height: min(800px, 82svh); overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: color-mix(in srgb, var(--secondary) 30%, transparent); padding: 0 12px; }
+/* Columns scroll endlessly, alternating up and down; hover pauses so tiles can be clicked */
+.wall-grid { display: flex; gap: 12px; height: 100%; -webkit-mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent); }
+.wall-col { flex: 1; min-width: 0; }
+.wall-track { padding-top: 12px; animation: wall-up var(--t, 60s) linear infinite; will-change: transform; }
+.wall-col.down .wall-track { animation-name: wall-down; }
+@keyframes wall-up { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@keyframes wall-down { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+.wall:hover .wall-track, .wall:focus-within .wall-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .wall { overflow-y: auto; } .wall-track { animation: none; } }
+.tile { margin-bottom: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--secondary); overflow: hidden; position: relative; }
 .tile a { position: absolute; inset: 0; }
 .tile img, .tile video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .tile .ph { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 14px; font-size: 13px; font-weight: 500; color: rgb(255 255 255 / .9); }
@@ -1048,14 +1055,32 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
 /* ---------- Gallery heading + wall ---------- */
 $("#galleryTitle").innerHTML = SITE.galleryTitle.split(" ").map((w, i) => `<span class="w" style="transition-delay:${i * 35}ms">${esc(w)}</span>`).join(" ");
 const HUES = [["#d6d3ce", "#b9b4ab"], ["#1f2937", "#4b5563"], ["#c7d2fe", "#818cf8"], ["#fde68a", "#f59e0b"], ["#bbf7d0", "#22c55e"], ["#fecaca", "#ef4444"], ["#e9d5ff", "#a855f7"], ["#bae6fd", "#0ea5e9"]];
-SITE.gallery.forEach((g, i) => {
+const tiles = SITE.gallery.map((g, i) => {
   const t = el("figure", { class: "tile" });
   t.style.aspectRatio = g.ratio;
   if (g.video) t.innerHTML = `<video src="${esc(g.video)}" muted playsinline loop autoplay aria-label="${esc(g.label)}"></video>`;
   else if (g.img) t.innerHTML = `<a href="${esc(g.img)}" target="_blank" rel="noopener" aria-label="${esc(g.label)} (opens full size)"><img src="${esc(g.img)}" alt="${esc(g.label)}" loading="lazy"></a>`;
   else { const [a, b] = HUES[i % HUES.length]; t.style.background = `linear-gradient(145deg, ${a}, ${b})`; t.innerHTML = `<figcaption class="ph">${esc(g.label)}</figcaption>`; }
-  $("#wall").append(t);
+  return t;
 });
+(function wall() {
+  const box = $("#wall"), wide = matchMedia("(min-width: 768px)");
+  function build() {
+    const n = wide.matches ? 3 : 2, cols = Array.from({ length: n }, () => ({ h: 0, items: [] }));
+    // put each tile in the currently shortest column
+    tiles.forEach((t, i) => { const c = cols.reduce((a, b) => (b.h < a.h ? b : a)); c.items.push(t); c.h += 1 / SITE.gallery[i].ratio; });
+    box.innerHTML = "";
+    cols.forEach((c, k) => {
+      const col = el("div", { class: "wall-col" + (k % 2 ? " down" : "") }), track = el("div", { class: "wall-track" });
+      c.items.forEach(t => track.append(t));
+      // a second, hidden-from-readers copy makes the loop seamless
+      if (!reduced) c.items.forEach(t => { const d = t.cloneNode(true); d.setAttribute("aria-hidden", "true"); d.querySelectorAll("a").forEach(a => a.tabIndex = -1); track.append(d); });
+      col.append(track); box.append(col);
+    });
+    requestAnimationFrame(() => box.querySelectorAll(".wall-track").forEach(tr => tr.style.setProperty("--t", Math.max(30, tr.scrollHeight / 2 / 28) + "s")));  // ~28px per second
+  }
+  build(); wide.addEventListener("change", build);
+})();
 
 /* ---------- Works ---------- */
 const FEATURE_ICONS = [
