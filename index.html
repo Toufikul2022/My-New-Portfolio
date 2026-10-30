@@ -248,6 +248,24 @@ main { position: relative; isolation: isolate; }
 .media-inner .screen { margin: 12px 30px; }
 @media (max-width: 480px) { .media-inner .screen { margin: 12px 16px; } }
 .screen img, .screen video { width: 100%; height: 100%; object-fit: cover; object-position: top center; position: absolute; inset: 0; }
+.screen .player { position: absolute; inset: 0; overflow: hidden; }
+.screen .slide { opacity: 0; transform-origin: var(--ox, 50%) 0%; transition: opacity .9s ease; will-change: transform, opacity; }
+.screen .slide.on { opacity: 1; animation: kenburns var(--dur, 5.2s) ease-in-out forwards; }
+.screen .slide.still { opacity: 1; animation: none; }
+@keyframes kenburns { from { transform: scale(1) translateY(0); } to { transform: scale(1.13) translateY(-2.5%); } }
+.screen .cursor { position: absolute; left: 0; top: 0; width: 20px; height: 20px; z-index: 3; pointer-events: none; transition: transform 1.3s cubic-bezier(.65,0,.35,1); filter: drop-shadow(0 2px 3px rgb(0 0 0 / .35)); }
+.screen .cursor.press svg { transform: scale(.82); }
+.screen .cursor svg { width: 100%; height: 100%; transition: transform .12s; }
+.screen .ripple { position: absolute; z-index: 2; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid rgb(255 255 255 / .9); background: rgb(124 92 255 / .25); pointer-events: none; animation: ripple .6s ease-out forwards; }
+@keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+.screen .prog { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 3; display: flex; gap: 4px; padding: 6px 8px; border-radius: 999px; background: rgb(0 0 0 / .4); backdrop-filter: blur(6px); }
+.screen .prog i { flex: 1; height: 3px; border-radius: 2px; background: rgb(255 255 255 / .3); overflow: hidden; }
+.screen .prog i::after { content: ""; display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+.screen .prog i.done::after { transform: scaleX(1); }
+.screen .prog i.run::after { animation: seg var(--dur, 5.2s) linear forwards; }
+@keyframes seg { to { transform: scaleX(1); } }
+.screen .live { position: absolute; top: 10px; left: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: #fff; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px); }
+.screen .live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; animation: blink 1.2s steps(1) infinite; }
 .screen .ph { position: absolute; inset: 0; display: grid; place-items: center; color: rgb(255 255 255 / .35); font-size: 14px; }
 .prompt { margin-right: 36px; display: flex; gap: 8px; border-top: 1px solid var(--border); padding: 28px 16px 16px; }
 .prompt p { flex: 1; min-width: 0; max-width: 320px; height: 36px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; background: var(--bg); font-size: 14px; color: var(--muted); box-shadow: var(--soft-shadow); }
@@ -628,7 +646,8 @@ const SITE = {
 
   filters: ["AI and Agentics", "Websites", "SaaS", "Mobile App", "Dashboards"],
 
-  // Case studies. img = inner screen, backdropImg = blurred card background.
+  // Case studies. screens = images played like a screen recording (img is the fallback),
+  // backdropImg = blurred card background. A screen can be { src, fit: "contain", bg: "#fff" } to avoid cropping.
   works: [
     {
       title: "A&M Canadian Immigration. Turning complex immigration law into clear, guided journeys.",
@@ -639,7 +658,8 @@ const SITE = {
       role: "UI/UX Designer and Web Developer",
       detail: "Information architecture, content design, infographics and the front-end build.",
       link: "work/amc-services.jpg",
-      img: "work/amc-services.jpg", fit: "contain", backdropImg: "work/amc-pnp-roadmap.jpg",
+      img: "work/amc-services.jpg", backdropImg: "work/amc-pnp-roadmap.jpg",
+      screens: [{ src: "work/amc-services.jpg", fit: "contain", bg: "#fff" }, "work/amc-about-reviews.jpg", "work/amc-news.jpg", "work/amc-lawyer-draws.jpg", "work/amc-article.jpg", { src: "work/amc-pnp-roadmap.jpg", fit: "contain", bg: "#fff" }],
       backdrop: ["#7a1d24", "#1d2b44"],
       features: [
         ["Service map.", "Urgent cases, PR, temporary residence and US-to-Canada routes, grouped the way clients actually ask."],
@@ -658,6 +678,7 @@ const SITE = {
       detail: "Dashboard, live-call states, analytics and the navigation for agents, campaigns and contacts.",
       link: "work/voiceiq-dashboard.jpg",
       img: "work/voiceiq-dashboard.jpg", backdropImg: "work/voiceiq-analytics.jpg",
+      screens: ["work/voiceiq-dashboard.jpg", "work/voiceiq-analytics.jpg"],
       backdrop: ["#312e81", "#6d28d9"],
       features: [
         ["Live at a glance.", "Ringing, live and completed calls with clear status pills that refresh every 15 seconds."],
@@ -676,6 +697,7 @@ const SITE = {
       detail: "End-to-end app flows: home, trends, live shopping, messages and the seller profile.",
       link: "work/stylebd-screens.jpg",
       img: "work/stylebd-screens.jpg", backdropImg: "work/stylebd-hero.jpg",
+      screens: ["work/stylebd-screens.jpg", "work/stylebd-screens-2.jpg"],
       backdrop: ["#4a0d2e", "#be185d"],
       features: [
         ["Live shopping.", "Live badges, viewer counts and in-stream offers like “Eid Collection 2026 Launch”."],
@@ -694,6 +716,7 @@ const SITE = {
       detail: "Landing page, generator flow, history and pricing, in light and dark themes.",
       link: "work/socialboost-generator.jpg",
       img: "work/socialboost-generator.jpg", backdropImg: "work/socialboost-hero.jpg",
+      screens: ["work/socialboost-hero.jpg", "work/socialboost-generator.jpg", "work/socialboost-mobile.jpg"],
       backdrop: ["#1e1b4b", "#7c3aed"],
       features: [
         ["Guided generator.", "Pick a platform, post type and tone, and the empty state explains what happens next."],
@@ -712,6 +735,7 @@ const SITE = {
       detail: "Information architecture, calendar and reporting views.",
       link: "work/crm-reports.jpg",
       img: "work/crm-reports.jpg", backdropImg: "work/crm-meetings.jpg",
+      screens: ["work/crm-reports.jpg", "work/crm-meetings.jpg"],
       backdrop: ["#0f3d5e", "#2563eb"],
       features: [
         ["Pipeline.", "Leads, deals, clients and projects in one sidebar, in the order work flows."],
@@ -730,6 +754,7 @@ const SITE = {
       detail: "Positioning, feature architecture and the marketing site.",
       link: "work/trustlayer-landing.jpg",
       img: "work/trustlayer-landing.jpg",
+      screens: ["work/trustlayer-landing.jpg"],
       backdrop: ["#3b0764", "#6366f1"],
       features: [
         ["AI tool registry.", "Every AI tool documented with risk and data-handling levels."],
@@ -748,6 +773,7 @@ const SITE = {
       detail: "Visual identity, responsive layouts and the contact flow.",
       link: "work/sabbir-videos-hero.jpg",
       img: "work/sabbir-videos-hero.jpg", backdropImg: "work/sabbir-mobile-screens.jpg",
+      screens: ["work/sabbir-videos-hero.jpg", "work/sabbir-tiktok.jpg", "work/sabbir-mobile-screens.jpg", "work/sabbir-contact.jpg"],
       backdrop: ["#111111", "#991b1b"],
       features: [
         ["One hub.", "Facebook, TikTok and YouTube feeds, newest first."],
@@ -1041,7 +1067,13 @@ const FEATURE_ICONS = [
 const tagOf = c => "#" + c.replace(/\s+/g, "");
 const LOADER = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-opacity=".15" stroke-width="2"/><path d="M8 1.5A6.5 6.5 0 0 1 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 SITE.works.forEach((w, i) => {
+  const shots = (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? { src: x } : x);
   const media = w.video ? `<video src="${esc(w.video)}" muted playsinline loop autoplay aria-label="${esc(w.product)}"></video>`
+    : shots.length ? `<div class="player" role="img" aria-label="${esc(w.product)} preview">${shots.map((x, k) =>
+        `<img class="slide" src="${esc(x.src)}" alt="" loading="lazy" style="${x.fit ? `object-fit:${esc(x.fit)};` : ""}${x.bg ? `background:${esc(x.bg)};` : ""}--ox:${[50, 20, 80, 35, 65][k % 5]}%">`).join("")}
+        <span class="live" aria-hidden="true">PREVIEW</span>
+        <span class="cursor" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+        <span class="prog" aria-hidden="true">${shots.map(() => "<i></i>").join("")}</span></div>`
     : w.img ? `<img src="${esc(w.img)}" alt="${esc(w.product)}" loading="lazy"${w.fit ? ` style="object-fit:${esc(w.fit)};background:#fff"` : ""}>` : `<span class="ph">Add a screenshot or video</span>`;
   const bg = w.backdropImg ? `<img src="${esc(w.backdropImg)}" alt="">` : "";
   $("#works").append(el("article", { class: "work", "aria-labelledby": "w" + i, "data-cats": w.categories.join("|") }, `
@@ -1072,6 +1104,42 @@ SITE.works.forEach((w, i) => {
       </div>
       <ul class="features">${w.features.map(([h, p], k) => `<li class="feature reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${FEATURE_ICONS[k % 4]}</svg><div><h4>${esc(h)}</h4><p>${esc(p)}</p></div></li>`).join("")}</ul>
     </div>`));
+});
+
+/* Screen-recording players: cycle screens with a slow zoom, a moving cursor and click ripples */
+document.querySelectorAll(".player").forEach(pl => {
+  const screen = pl.parentElement, slides = [...pl.querySelectorAll(".slide")], segs = [...pl.querySelectorAll(".prog i")];
+  const cursor = pl.querySelector(".cursor");
+  if (reduced) { slides[0].classList.add("still"); return; }
+  const DUR = 5200, n = slides.length;
+  let i = -1, timer, clicks = [], playing = false;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function moveCursor(x, y) { cursor.style.transform = `translate(${x}px, ${y}px)`; }
+  function click() {
+    cursor.classList.add("press"); setTimeout(() => cursor.classList.remove("press"), 160);
+    const m = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(cursor.style.transform); if (!m) return;
+    const r = document.createElement("span"); r.className = "ripple"; r.style.left = (+m[1] + 4) + "px"; r.style.top = (+m[2] + 3) + "px";
+    pl.append(r); setTimeout(() => r.remove(), 650);
+  }
+  function show(k) {
+    clicks.forEach(clearTimeout); clicks = [];
+    i = k % n;
+    slides.forEach((s, j) => { s.classList.toggle("on", j === i); if (j === i) { s.style.animation = "none"; s.offsetWidth; s.style.animation = ""; } });
+    segs.forEach((g, j) => { g.className = j < i ? "done" : ""; });
+    const seg = segs[i]; seg.offsetWidth; seg.className = "run";
+    // a short cursor path per slide: glide, click, glide, click
+    const W = screen.clientWidth, H = screen.clientHeight;
+    [[300, .3], [1700, .6], [3100, .45], [4300, .7]].forEach(([t, f], j) => clicks.push(setTimeout(() => {
+      moveCursor(rnd(W * .15, W * .85), rnd(H * .2, H * .8));
+      if (j % 2) clicks.push(setTimeout(click, 1350));
+    }, t)));
+    timer = setTimeout(() => show(i + 1), DUR);
+  }
+  function play() { if (playing) return; playing = true; show(i < 0 ? 0 : i); }
+  function pause() { playing = false; clearTimeout(timer); clicks.forEach(clearTimeout); }
+  screen.style.setProperty("--dur", DUR + "ms");
+  moveCursor(screen.clientWidth * .5, screen.clientHeight * .6);
+  new IntersectionObserver(([e]) => e.isIntersecting ? play() : pause(), { threshold: .25 }).observe(screen);
 });
 
 /* Filters */
