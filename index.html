@@ -187,19 +187,6 @@ main { position: relative; isolation: isolate; }
 .cloud span:nth-child(3) { left: 144px; top: 28px; width: 112px; height: 56px; }
 @keyframes drift { from { transform: translateX(-320px) scale(var(--s)); } to { transform: translateX(calc(100vw + 40px)) scale(var(--s)); } }
 #rain { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* Weather switch in the hero corner */
-.weather { position: absolute; z-index: 5; right: 24px; top: calc(100svh - 84px); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.weather-btns { display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
-.weather-btns button { display: inline-flex; align-items: center; gap: 6px; height: 34px; min-width: 34px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 500; color: color-mix(in srgb, var(--fg) 65%, transparent); transition: background-color .25s, color .25s; }
-.weather-btns button svg { width: 16px; height: 16px; flex-shrink: 0; }
-.weather-btns button span { display: none; }
-.weather-btns button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.weather-btns button[aria-pressed="true"] span { display: inline; }
-.weather-btns button:hover:not([aria-pressed="true"]) { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
-.weather-bar { width: 100%; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 12%, transparent); overflow: hidden; }
-.weather-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--fg) 55%, transparent); transform-origin: left; transform: scaleX(0); }
-@media (max-width: 767px) { .weather { top: 88px; right: 50%; transform: translateX(50%); } .weather-btns button { height: 30px; min-width: 30px; padding: 0 8px; } main .hero { padding-top: 150px; } }
-@media (prefers-reduced-motion: reduce) { .weather-bar { display: none; } }
 
 /* ---------- Hero ---------- */
 .hero { max-width: 1280px; margin: 0 auto; min-height: 100svh; display: grid; align-items: center; gap: 48px; padding: 112px 24px 64px; }
@@ -514,10 +501,6 @@ footer { overflow: clip; padding: 0 24px; }
     <div class="sun"></div><div class="sun core"></div><div class="moon"></div>
     <div id="clouds"></div>
     <canvas id="rain"></canvas>
-  </div>
-  <div class="weather" id="weather">
-    <div class="weather-btns glass" role="group" aria-label="Weather"></div>
-    <div class="weather-bar" aria-hidden="true"><i></i></div>
   </div>
 
   <!-- HERO -->
@@ -1010,26 +993,14 @@ addEventListener("scroll", setActive, { passive: true });
 const pointer = { x: innerWidth / 2, y: innerHeight / 3, vx: 0 };
 addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
 (function weather() {
-  const WEATHER = [
-    { id: "rain", label: "Rain", icon: '<path d="M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 16H8"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>' },
-    { id: "snow", label: "Snow", icon: '<path d="M12 2v20M4.9 6l14.2 12M4.9 18L19.1 6"/><path d="M9 3.5l3 2 3-2M9 20.5l3-2 3 2"/>' },
-    { id: "sun", label: "Sun", icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>' },
-  ];
+  const WEATHER = ["rain", "snow", "sun"];
   const STAY = 14000;                                            // how long each weather lasts
   const scene = $("#scene"), cv = $("#rain"), ctx = cv.getContext("2d");
-  const btnBox = $("#weather .weather-btns"), bar = $("#weather .weather-bar i");
   let idx = 0, timer, w = 0, h = 0, wind = 0, onScreen = true;
   const amt = { rain: 1, snow: 0, sun: 0 };                       // eased 0..1 strength of each weather
-  WEATHER.forEach((wx, k) => {
-    const b = el("button", { type: "button", "aria-pressed": k === 0, title: wx.label }, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${wx.icon}</svg><span>${wx.label}</span>`);
-    b.onclick = () => set(k, true); btnBox.append(b);
-  });
   function set(k) {
-    idx = k; scene.dataset.weather = WEATHER[k].id;
-    [...btnBox.children].forEach((b, j) => b.setAttribute("aria-pressed", j === k));
+    idx = k; scene.dataset.weather = WEATHER[k];
     clearTimeout(timer); if (reduced) return;
-    bar.style.transition = "none"; bar.style.transform = "scaleX(0)"; bar.offsetWidth;
-    bar.style.transition = `transform ${STAY}ms linear`; bar.style.transform = "scaleX(1)";
     timer = setTimeout(() => set((idx + 1) % WEATHER.length), STAY);
   }
   const rainRGB = () => getComputedStyle(root).getPropertyValue("--rain").trim().split(/\s+/).join(",");
@@ -1048,7 +1019,7 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
   }
   function frame(now) {
     if (onScreen) {
-      const cur = WEATHER[idx].id, dark = root.dataset.theme === "dark";
+      const cur = WEATHER[idx], dark = root.dataset.theme === "dark";
       for (const k in amt) amt[k] += ((k === cur ? 1 : 0) - amt[k]) * .012;    // ~3 s cross-fade between weathers
       const target = ((pointer.x / innerWidth) - .5) * 1.1 + Math.max(-1, Math.min(1, pointer.vx / 40)) * .6;
       pointer.vx *= .9;
