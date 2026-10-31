@@ -288,8 +288,7 @@ main { position: relative; isolation: isolate; }
 @media (prefers-reduced-motion: reduce) { .wall { overflow-y: auto; } .wall-track { animation: none; } }
 .tile { margin-bottom: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--secondary); overflow: hidden; position: relative; }
 .tile a { position: absolute; inset: 0; }
-.tile img, .tile video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-.tile .ph { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 14px; font-size: 13px; font-weight: 500; color: rgb(255 255 255 / .9); }
+.tile img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 
 /* Works */
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
@@ -314,7 +313,7 @@ main { position: relative; isolation: isolate; }
 .screen { position: relative; aspect-ratio: 511 / 322; border-radius: 24px; overflow: clip; background: #0a0a0a; }
 .media-inner .screen { margin: 12px 30px; }
 @media (max-width: 480px) { .media-inner .screen { margin: 12px 16px; } }
-.screen img, .screen video { width: 100%; height: 100%; object-fit: cover; object-position: top center; position: absolute; inset: 0; }
+.screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; position: absolute; inset: 0; }
 .screen .player { position: absolute; inset: 0; overflow: hidden; }
 .screen .slide { opacity: 0; transform-origin: var(--ox, 50%) 0%; transition: opacity .9s ease; will-change: transform, opacity; }
 .screen .slide.on { opacity: 1; animation: kenburns var(--dur, 5.2s) ease-in-out forwards; }
@@ -333,7 +332,6 @@ main { position: relative; isolation: isolate; }
 @keyframes seg { to { transform: scaleX(1); } }
 .screen .live { position: absolute; top: 10px; left: 12px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: #fff; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px); }
 .screen .live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; animation: blink 1.2s steps(1) infinite; }
-.screen .ph { position: absolute; inset: 0; display: grid; place-items: center; color: rgb(255 255 255 / .35); font-size: 14px; }
 .prompt { margin-right: 36px; display: flex; gap: 8px; border-top: 1px solid var(--border); padding: 28px 16px 16px; }
 .prompt p { flex: 1; min-width: 0; max-width: 320px; height: 36px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; background: var(--bg); font-size: 14px; color: var(--muted); box-shadow: var(--soft-shadow); }
 .prompt p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -400,7 +398,6 @@ main { position: relative; isolation: isolate; }
 .photos .col { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .photo { border-radius: 20px; background: var(--secondary); overflow: hidden; position: relative; width: 100%; transition: filter .5s, opacity .5s; }
 .photo img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, center); }
-.photo .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; font-size: 13px; color: var(--muted); }
 .photo.short { height: 300px; }
 .photo.tall { height: 480px; }
 @media (min-width: 768px) { .photo.tall { height: 100%; } }
@@ -666,7 +663,6 @@ footer { overflow: clip; padding: 0 24px; }
 /* =====================================================================
    EDIT EVERYTHING ABOUT YOU HERE. The page is built from this object.
    Images: put files next to index.html and set e.g. img: "photo1.jpg".
-   Videos: set video: "clip.mp4" (plays muted and looping).
    ===================================================================== */
 const SITE = {
   name: "Toufik Ul Islam",
@@ -723,7 +719,7 @@ const SITE = {
 
   filters: ["AI and Agentics", "Websites", "SaaS", "Mobile App", "Dashboards"],
 
-  // Case studies. screens = images played like a screen recording (img is the fallback),
+  // Case studies. screens = images played like a screen recording,
   // backdropImg = blurred card background. A screen can be { src, fit: "contain", bg: "#fff" } to avoid cropping.
   works: [
     {
@@ -735,7 +731,7 @@ const SITE = {
       role: "UI/UX Designer and Web Developer",
       detail: "Information architecture, content design, infographics and the front-end build.",
       link: "work/amc-services.jpg",
-      img: "work/amc-services.jpg", backdropImg: "work/amc-pnp-roadmap.jpg",
+      backdropImg: "work/amc-pnp-roadmap.jpg",
       screens: [{ src: "work/amc-services.jpg", fit: "contain", bg: "#fff" }, "work/amc-about-reviews.jpg", "work/amc-news.jpg", "work/amc-lawyer-draws.jpg", "work/amc-article.jpg", { src: "work/amc-pnp-roadmap.jpg", fit: "contain", bg: "#fff" }],
       backdrop: ["#7a1d24", "#1d2b44"],
       features: [
@@ -754,7 +750,7 @@ const SITE = {
       role: "Product Designer",
       detail: "Dashboard, live-call states, analytics and the navigation for agents, campaigns and contacts.",
       link: "work/voiceiq-dashboard.jpg",
-      img: "work/voiceiq-dashboard.jpg", backdropImg: "work/voiceiq-analytics.jpg",
+      backdropImg: "work/voiceiq-analytics.jpg",
       screens: ["work/voiceiq-dashboard.jpg", "work/voiceiq-analytics.jpg"],
       backdrop: ["#312e81", "#6d28d9"],
       features: [
@@ -773,7 +769,7 @@ const SITE = {
       role: "UI/UX Designer",
       detail: "End-to-end app flows: home, trends, live shopping, messages and the seller profile.",
       link: "work/stylebd-screens.jpg",
-      img: "work/stylebd-screens.jpg", backdropImg: "work/stylebd-hero.jpg",
+      backdropImg: "work/stylebd-hero.jpg",
       screens: ["work/stylebd-screens.jpg", "work/stylebd-screens-2.jpg"],
       backdrop: ["#4a0d2e", "#be185d"],
       features: [
@@ -792,7 +788,7 @@ const SITE = {
       role: "Product Designer and Front-End Developer",
       detail: "Landing page, generator flow, history and pricing, in light and dark themes.",
       link: "work/socialboost-generator.jpg",
-      img: "work/socialboost-generator.jpg", backdropImg: "work/socialboost-hero.jpg",
+      backdropImg: "work/socialboost-hero.jpg",
       screens: ["work/socialboost-hero.jpg", "work/socialboost-generator.jpg", "work/socialboost-mobile.jpg"],
       backdrop: ["#1e1b4b", "#7c3aed"],
       features: [
@@ -811,7 +807,7 @@ const SITE = {
       role: "Product Designer",
       detail: "Information architecture, calendar and reporting views.",
       link: "work/crm-reports.jpg",
-      img: "work/crm-reports.jpg", backdropImg: "work/crm-meetings.jpg",
+      backdropImg: "work/crm-meetings.jpg",
       screens: ["work/crm-reports.jpg", "work/crm-meetings.jpg"],
       backdrop: ["#0f3d5e", "#2563eb"],
       features: [
@@ -830,7 +826,6 @@ const SITE = {
       role: "Product Designer",
       detail: "Positioning, feature architecture and the marketing site.",
       link: "work/trustlayer-landing.jpg",
-      img: "work/trustlayer-landing.jpg",
       screens: ["work/trustlayer-landing.jpg"],
       backdrop: ["#3b0764", "#6366f1"],
       features: [
@@ -849,7 +844,7 @@ const SITE = {
       role: "Web Designer and Developer",
       detail: "Visual identity, responsive layouts and the contact flow.",
       link: "work/sabbir-videos-hero.jpg",
-      img: "work/sabbir-videos-hero.jpg", backdropImg: "work/sabbir-mobile-screens.jpg",
+      backdropImg: "work/sabbir-mobile-screens.jpg",
       screens: ["work/sabbir-videos-hero.jpg", "work/sabbir-tiktok.jpg", "work/sabbir-mobile-screens.jpg", "work/sabbir-contact.jpg"],
       backdrop: ["#111111", "#991b1b"],
       features: [
@@ -1170,13 +1165,10 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
 
 /* ---------- Gallery heading + wall ---------- */
 $("#galleryTitle").innerHTML = SITE.galleryTitle.split(" ").map((w, i) => `<span class="w" style="transition-delay:${i * 35}ms">${esc(w)}</span>`).join(" ");
-const HUES = [["#d6d3ce", "#b9b4ab"], ["#1f2937", "#4b5563"], ["#c7d2fe", "#818cf8"], ["#fde68a", "#f59e0b"], ["#bbf7d0", "#22c55e"], ["#fecaca", "#ef4444"], ["#e9d5ff", "#a855f7"], ["#bae6fd", "#0ea5e9"]];
-const tiles = SITE.gallery.map((g, i) => {
+const tiles = SITE.gallery.map(g => {
   const t = el("figure", { class: "tile" });
   t.style.aspectRatio = g.ratio;
-  if (g.video) t.innerHTML = `<video src="${esc(g.video)}" muted playsinline loop autoplay aria-label="${esc(g.label)}"></video>`;
-  else if (g.img) t.innerHTML = `<a href="${esc(g.img)}" target="_blank" rel="noopener" aria-label="${esc(g.label)} (opens full size)"><img src="${esc(g.img)}" alt="${esc(g.label)}" loading="lazy"></a>`;
-  else { const [a, b] = HUES[i % HUES.length]; t.style.background = `linear-gradient(145deg, ${a}, ${b})`; t.innerHTML = `<figcaption class="ph">${esc(g.label)}</figcaption>`; }
+  t.innerHTML = `<a href="${esc(g.img)}" target="_blank" rel="noopener" aria-label="${esc(g.label)} (opens full size)"><img src="${esc(g.img)}" alt="${esc(g.label)}" loading="lazy"></a>`;
   return t;
 });
 (function wall() {
@@ -1208,14 +1200,12 @@ const FEATURE_ICONS = [
 const tagOf = c => "#" + c.replace(/\s+/g, "");
 const LOADER = '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-opacity=".15" stroke-width="2"/><path d="M8 1.5A6.5 6.5 0 0 1 14.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 SITE.works.forEach((w, i) => {
-  const shots = (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? { src: x } : x);
-  const media = w.video ? `<video src="${esc(w.video)}" muted playsinline loop autoplay aria-label="${esc(w.product)}"></video>`
-    : shots.length ? `<div class="player" role="img" aria-label="${esc(w.product)} preview">${shots.map((x, k) =>
+  const shots = w.screens.map(x => typeof x === "string" ? { src: x } : x);
+  const media = `<div class="player" role="img" aria-label="${esc(w.product)} preview">${shots.map((x, k) =>
         `<img class="slide" src="${esc(x.src)}" alt="" loading="lazy" style="${x.fit ? `object-fit:${esc(x.fit)};` : ""}${x.bg ? `background:${esc(x.bg)};` : ""}--ox:${[50, 20, 80, 35, 65][k % 5]}%">`).join("")}
         <span class="live" aria-hidden="true">PREVIEW</span>
         <span class="cursor" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-        <span class="prog" aria-hidden="true">${shots.map(() => "<i></i>").join("")}</span></div>`
-    : w.img ? `<img src="${esc(w.img)}" alt="${esc(w.product)}" loading="lazy"${w.fit ? ` style="object-fit:${esc(w.fit)};background:#fff"` : ""}>` : `<span class="ph">Add a screenshot or video</span>`;
+        <span class="prog" aria-hidden="true">${shots.map(() => "<i></i>").join("")}</span></div>`;
   const bg = w.backdropImg ? `<img src="${esc(w.backdropImg)}" alt="">` : "";
   $("#works").append(el("article", { class: "work", "aria-labelledby": "w" + i, "data-cats": w.categories.join("|") }, `
     <div class="frame">
@@ -1347,7 +1337,7 @@ function megaMenu(href, items, label) {
     });
   });
 }
-const shotsOf = w => (w.screens || (w.img ? [w.img] : [])).map(x => typeof x === "string" ? x : x.src);
+const shotsOf = w => w.screens.map(x => typeof x === "string" ? x : x.src);
 const workGroupOrder = [...new Set([...SITE.filters, ...SITE.works.map(w => w.menu || w.categories[0])])];
 megaMenu("#work", SITE.works.map((w, i) => ({
   group: w.menu || w.categories[0], name: w.title.split(". ")[0], desc: w.product,
@@ -1380,7 +1370,7 @@ function typeOut(span) {
 
 /* ---------- Experiments ---------- */
 SITE.experiments.forEach((x, k) => $("#exps").append(el("li", { class: "exp reveal", id: "x" + k }, `
-  <div class="screen">${x.video ? `<video src="${esc(x.video)}" muted playsinline loop autoplay></video>` : x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : `<span class="ph">Preview</span>`}</div>
+  <div class="screen"><img src="${esc(x.img)}" alt="" loading="lazy"></div>
   <div class="exp-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p>
   <a class="pill" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.cta || "Give it a try")}<span class="sr-only"> (opens ${esc(x.title)} in a new tab)</span></a></div>`)));
 
@@ -1406,7 +1396,6 @@ SITE.aboutText.forEach(p => { const e = el("p"); e.textContent = p; $("#aboutTex
   const imgsOf = p => p ? (p.imgs || (p.img ? [p.img] : [])) : [];
   const ph = p => {
     const list = imgsOf(p);
-    if (!list.length) return p && p.alt ? `<span class="ph">${esc(p.alt)}</span>` : "";
     return list.map((src, k) => `<img class="pslide${list.length === 1 ? " solo" : k === 0 ? " on" : ""}" src="${esc(src)}" alt="" loading="lazy" style="--pos:${esc(p.pos || "center")}">`).join("");
   };
   const slot = (p, cls) => p && p.alt ? `<div class="photo ${cls}" role="img" aria-label="${esc(p.alt)}">${ph(p)}</div>` : `<div class="photo ${cls}" aria-hidden="true">${ph(p)}</div>`;
