@@ -22,8 +22,6 @@
   --glass-border: rgb(255 255 255 / .5);
   --glass-shadow: 0 10px 40px -10px rgb(0 0 0 / .25), inset 0 1px 0 rgb(255 255 255 / .7), inset 0 -1px 0 rgb(255 255 255 / .15);
   --soft-shadow: 0 0 .5px rgb(0 0 0 / .4), 0 1px .5px rgb(0 0 0 / .04), 0 2px 2px rgb(0 0 0 / .04);
-  --sky: linear-gradient(to bottom, rgb(232 234 238), rgb(244 245 247 / .7) 40%, transparent);
-  --cloud: rgb(214 217 223 / .9);
   --rain: 60 64 72;
 }
 :root[data-theme="dark"] {
@@ -39,8 +37,6 @@
   --glass-border: rgb(255 255 255 / .15);
   --glass-shadow: 0 10px 40px -10px rgb(0 0 0 / .7), inset 0 1px 0 rgb(255 255 255 / .2), inset 0 -1px 0 rgb(255 255 255 / .05);
   --soft-shadow: 0 0 0 1px rgb(255 255 255 / .15);
-  --sky: linear-gradient(to bottom, rgb(30 41 59 / .55), rgb(23 32 48 / .3) 45%, transparent);
-  --cloud: rgb(148 163 184 / .12);
   --rain: 200 210 225;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -159,15 +155,51 @@ ul { list-style: none; }
 /* ---------- Hero sky scene ---------- */
 main { position: relative; isolation: isolate; }
 .scene { position: absolute; inset: 0 0 auto 0; height: 115svh; z-index: -1; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
-.scene .sky { position: absolute; inset: 0; background: var(--sky); }
+.scene .sky { position: absolute; inset: 0; opacity: 0; transition: opacity 3s ease; }
+.scene[data-weather="rain"] .sky-rain, .scene[data-weather="snow"] .sky-snow, .scene[data-weather="sun"] .sky-sun { opacity: 1; }
+.sky-rain { background: linear-gradient(to bottom, rgb(212 216 224), rgb(236 238 242 / .8) 45%, transparent); }
+.sky-snow { background: linear-gradient(to bottom, rgb(200 214 234), rgb(228 236 247 / .85) 45%, transparent); }
+.sky-sun  { background: linear-gradient(to bottom, rgb(165 211 250), rgb(212 235 253 / .8) 45%, transparent); }
+:root[data-theme="dark"] .sky-rain { background: linear-gradient(to bottom, rgb(30 41 59 / .65), rgb(23 32 48 / .3) 45%, transparent); }
+:root[data-theme="dark"] .sky-snow { background: linear-gradient(to bottom, rgb(48 62 90 / .7), rgb(30 40 62 / .3) 45%, transparent); }
+:root[data-theme="dark"] .sky-sun  { background: linear-gradient(to bottom, rgb(10 18 44 / .95), rgb(16 26 58 / .45) 45%, transparent); }
+/* sun by day, moon by night: only in clear weather */
+.sun { position: absolute; right: -300px; top: -320px; width: 820px; height: 820px; border-radius: 50%; filter: blur(64px); background: radial-gradient(circle, rgb(255 244 204) 0%, rgb(255 229 160 / .7) 30%, rgb(255 222 150 / .25) 55%, transparent 72%); opacity: 0; transition: opacity 3s ease; animation: pulse 8s ease-in-out infinite; }
+.sun.core { right: -80px; top: -140px; width: 360px; height: 360px; filter: blur(30px); background: radial-gradient(circle, rgb(255 252 235) 0%, rgb(255 240 190 / .7) 45%, transparent 70%); }
+.moon { position: absolute; right: 12%; top: 9%; width: 74px; height: 74px; border-radius: 50%; background: radial-gradient(circle at 38% 38%, #fdfcf5, #e6e2d3 60%, #cfcab8); box-shadow: 0 0 60px 18px rgb(220 225 255 / .18); opacity: 0; transition: opacity 3s ease; }
+.moon::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 64% 60%, rgb(0 0 0 / .08) 0 9%, transparent 10%), radial-gradient(circle at 40% 70%, rgb(0 0 0 / .06) 0 6%, transparent 7%), radial-gradient(circle at 55% 30%, rgb(0 0 0 / .05) 0 5%, transparent 6%); }
+.scene[data-weather="sun"] .sun { opacity: 1; }
+:root[data-theme="dark"] .scene .sun { display: none; }
+:root[data-theme="dark"] .scene[data-weather="sun"] .moon { opacity: 1; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
 
 .cloud { position: absolute; left: 0; width: 288px; height: 96px; animation: drift linear infinite; }
-.cloud span { position: absolute; border-radius: 999px; background: var(--cloud); filter: blur(12px); }
+.cloud { transition: opacity 3s ease; }
+.cloud span { position: absolute; border-radius: 999px; background: rgb(196 201 210 / .95); filter: blur(12px); transition: background-color 3s ease; }
+.scene[data-weather="snow"] .cloud span { background: rgb(222 228 238 / .92); }
+.scene[data-weather="sun"] .cloud span { background: rgb(255 255 255 / .95); }
+.scene[data-weather="sun"] .cloud { opacity: .7; }
+:root[data-theme="dark"] .cloud span { background: rgb(148 163 184 / .16); }
+:root[data-theme="dark"] .scene[data-weather="snow"] .cloud span { background: rgb(176 190 212 / .15); }
+:root[data-theme="dark"] .scene[data-weather="sun"] .cloud { opacity: .35; }
 .cloud span:nth-child(1) { left: 24px; top: 32px; width: 160px; height: 56px; }
 .cloud span:nth-child(2) { left: 80px; top: 8px; width: 112px; height: 80px; }
 .cloud span:nth-child(3) { left: 144px; top: 28px; width: 112px; height: 56px; }
 @keyframes drift { from { transform: translateX(-320px) scale(var(--s)); } to { transform: translateX(calc(100vw + 40px)) scale(var(--s)); } }
 #rain { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Weather switch in the hero corner */
+.weather { position: absolute; z-index: 5; right: 24px; top: calc(100svh - 84px); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.weather-btns { display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
+.weather-btns button { display: inline-flex; align-items: center; gap: 6px; height: 34px; min-width: 34px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 500; color: color-mix(in srgb, var(--fg) 65%, transparent); transition: background-color .25s, color .25s; }
+.weather-btns button svg { width: 16px; height: 16px; flex-shrink: 0; }
+.weather-btns button span { display: none; }
+.weather-btns button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.weather-btns button[aria-pressed="true"] span { display: inline; }
+.weather-btns button:hover:not([aria-pressed="true"]) { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.weather-bar { width: 100%; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 12%, transparent); overflow: hidden; }
+.weather-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--fg) 55%, transparent); transform-origin: left; transform: scaleX(0); }
+@media (max-width: 767px) { .weather { top: 88px; right: 50%; transform: translateX(50%); } .weather-btns button { height: 30px; min-width: 30px; padding: 0 8px; } main .hero { padding-top: 150px; } }
+@media (prefers-reduced-motion: reduce) { .weather-bar { display: none; } }
 
 /* ---------- Hero ---------- */
 .hero { max-width: 1280px; margin: 0 auto; min-height: 100svh; display: grid; align-items: center; gap: 48px; padding: 112px 24px 64px; }
@@ -477,10 +509,15 @@ footer { overflow: clip; padding: 0 24px; }
 <nav class="rail" id="rail" aria-label="Sections on this page"></nav>
 
 <main>
-  <div class="scene" aria-hidden="true">
-    <div class="sky"></div>
+  <div class="scene" id="scene" data-weather="rain" aria-hidden="true">
+    <div class="sky sky-rain"></div><div class="sky sky-snow"></div><div class="sky sky-sun"></div>
+    <div class="sun"></div><div class="sun core"></div><div class="moon"></div>
     <div id="clouds"></div>
     <canvas id="rain"></canvas>
+  </div>
+  <div class="weather" id="weather">
+    <div class="weather-btns glass" role="group" aria-label="Weather"></div>
+    <div class="weather-bar" aria-hidden="true"><i></i></div>
   </div>
 
   <!-- HERO -->
@@ -963,51 +1000,101 @@ function setActive() {
 }
 addEventListener("scroll", setActive, { passive: true });
 
-/* ---------- Sky: clouds + rain ---------- */
+/* ---------- Sky: clouds + changing weather (rain → snow → sun) ---------- */
 [[8, 1.1, 70, -10], [22, .8, 90, -45], [4, .7, 110, -80], [30, 1, 80, -30], [14, .6, 120, -60]].forEach(([top, s, dur, delay]) => {
   const c = el("div", { class: "cloud" }, "<span></span><span></span><span></span>");
   c.style.cssText = `top:${top}%;--s:${s};animation-duration:${dur}s;animation-delay:${delay}s`;
   $("#clouds").append(c);
 });
-/* Rain: streaks slant toward wherever the mouse is moving */
+// Rain and snow drift toward wherever the mouse is moving
 const pointer = { x: innerWidth / 2, y: innerHeight / 3, vx: 0 };
 addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
-(function rain() {
-  const cv = $("#rain"), ctx = cv.getContext("2d");
-  let drops = [], w = 0, h = 0, wind = 0, onScreen = true;
-  const color = () => getComputedStyle(root).getPropertyValue("--rain").trim().split(/\s+/).join(",");
-  let rgb = color();
-  new MutationObserver(() => { rgb = color(); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+(function weather() {
+  const WEATHER = [
+    { id: "rain", label: "Rain", icon: '<path d="M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 16H8"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>' },
+    { id: "snow", label: "Snow", icon: '<path d="M12 2v20M4.9 6l14.2 12M4.9 18L19.1 6"/><path d="M9 3.5l3 2 3-2M9 20.5l3-2 3 2"/>' },
+    { id: "sun", label: "Sun", icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>' },
+  ];
+  const STAY = 14000;                                            // how long each weather lasts
+  const scene = $("#scene"), cv = $("#rain"), ctx = cv.getContext("2d");
+  const btnBox = $("#weather .weather-btns"), bar = $("#weather .weather-bar i");
+  let idx = 0, timer, w = 0, h = 0, wind = 0, onScreen = true;
+  const amt = { rain: 1, snow: 0, sun: 0 };                       // eased 0..1 strength of each weather
+  WEATHER.forEach((wx, k) => {
+    const b = el("button", { type: "button", "aria-pressed": k === 0, title: wx.label }, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${wx.icon}</svg><span>${wx.label}</span>`);
+    b.onclick = () => set(k, true); btnBox.append(b);
+  });
+  function set(k) {
+    idx = k; scene.dataset.weather = WEATHER[k].id;
+    [...btnBox.children].forEach((b, j) => b.setAttribute("aria-pressed", j === k));
+    clearTimeout(timer); if (reduced) return;
+    bar.style.transition = "none"; bar.style.transform = "scaleX(0)"; bar.offsetWidth;
+    bar.style.transition = `transform ${STAY}ms linear`; bar.style.transform = "scaleX(1)";
+    timer = setTimeout(() => set((idx + 1) % WEATHER.length), STAY);
+  }
+  const rainRGB = () => getComputedStyle(root).getPropertyValue("--rain").trim().split(/\s+/).join(",");
+  let rgb = rainRGB(); new MutationObserver(() => { rgb = rainRGB(); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
   new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(cv);
+  let drops = [], flakes = [], stars = [];
+  const drop = any => { const z = Math.random(); return { x: Math.random() * (w + 200) - 100, y: any ? Math.random() * h : -30, len: 8 + z * 18, v: 5 + z * 9, a: .12 + z * .35, t: Math.random() }; };
+  const flake = any => { const z = Math.random(); return { x: Math.random() * (w + 200) - 100, y: any ? Math.random() * h : -10, r: .8 + z * 2.6, v: .35 + z * 1.1, a: .45 + z * .5, ph: Math.random() * 6.28, t: Math.random() }; };
   function size() {
     const dpr = Math.min(devicePixelRatio, 2);
     w = cv.offsetWidth; h = cv.offsetHeight;
     cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drops = Array.from({ length: Math.round(w * h / 9000) }, () => newDrop(true));
+    drops = Array.from({ length: Math.round(w * h / 9000) }, () => drop(true));
+    flakes = Array.from({ length: Math.round(w * h / 7000) }, () => flake(true));
+    stars = Array.from({ length: Math.round(w / 8) }, () => ({ x: Math.random() * w, y: Math.random() * h * .55, r: Math.random() * 1.1 + .3, p: Math.random() * 6.28 }));
   }
-  function newDrop(anywhere) {
-    const z = Math.random();                       // depth: far drops are shorter, slower, fainter
-    return { x: Math.random() * (w + 200) - 100, y: anywhere ? Math.random() * h : -30, len: 8 + z * 18, v: 5 + z * 9, a: .12 + z * .35 };
-  }
-  function frame() {
+  function frame(now) {
     if (onScreen) {
-      // Target slant: cursor side of the screen + how fast the mouse is moving
+      const cur = WEATHER[idx].id, dark = root.dataset.theme === "dark";
+      for (const k in amt) amt[k] += ((k === cur ? 1 : 0) - amt[k]) * .012;    // ~3 s cross-fade between weathers
       const target = ((pointer.x / innerWidth) - .5) * 1.1 + Math.max(-1, Math.min(1, pointer.vx / 40)) * .6;
       pointer.vx *= .9;
       wind += (Math.max(-1.2, Math.min(1.2, target)) - wind) * .05;
       ctx.clearRect(0, 0, w, h);
-      ctx.lineWidth = 1; ctx.lineCap = "round";
-      for (const d of drops) {
-        const dx = wind * d.v * .6;
-        d.x += dx; d.y += d.v;
-        ctx.strokeStyle = `rgba(${rgb},${d.a})`;
-        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - dx / d.v * d.len, d.y - d.len); ctx.stroke();
-        if (d.y > h + 20 || d.x < -120 || d.x > w + 120) Object.assign(d, newDrop(false));
+      // clear weather: sun rays by day, twinkling stars by night
+      if (amt.sun > .01) {
+        if (dark) {
+          for (const st of stars) { ctx.globalAlpha = amt.sun * (.3 + .6 * Math.sin(now / 800 + st.p) ** 2); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 7); ctx.fill(); }
+          ctx.globalAlpha = 1;
+        } else {
+          const ox = w * .9, oy = -h * .08;
+          for (let k = 0; k < 9; k++) {
+            const a = 1.75 + k * .17 + Math.sin(now / 4000 + k) * .03, sp = .035 + (k % 3) * .012, L = h * 1.3;
+            const g = ctx.createLinearGradient(ox, oy, ox + Math.cos(a) * L, oy + Math.sin(a) * L);
+            g.addColorStop(0, `rgba(255,238,180,${.22 * amt.sun})`); g.addColorStop(1, "rgba(255,238,180,0)");
+            ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(ox, oy);
+            ctx.lineTo(ox + Math.cos(a - sp) * L, oy + Math.sin(a - sp) * L); ctx.lineTo(ox + Math.cos(a + sp) * L, oy + Math.sin(a + sp) * L); ctx.fill();
+          }
+        }
+      }
+      // rain
+      if (amt.rain > .01) {
+        ctx.lineWidth = 1; ctx.lineCap = "round";
+        for (const d of drops) {
+          const dx = wind * d.v * .6; d.x += dx; d.y += d.v;
+          if (d.t < amt.rain) { ctx.strokeStyle = `rgba(${rgb},${d.a})`; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - dx / d.v * d.len, d.y - d.len); ctx.stroke(); }
+          if (d.y > h + 20 || d.x < -120 || d.x > w + 120) Object.assign(d, drop(false));
+        }
+      }
+      // snow: slow flakes that sway as they fall
+      if (amt.snow > .01) {
+        for (const f of flakes) {
+          f.ph += .02; f.x += wind * f.v * 1.2 + Math.sin(f.ph) * .45; f.y += f.v;
+          if (f.t < amt.snow) {
+            ctx.fillStyle = `rgba(255,255,255,${dark ? f.a : Math.min(1, f.a + .3)})`;
+            ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (dark ? 1 : 1.15), 0, 7); ctx.fill();
+            if (!dark) { ctx.strokeStyle = `rgba(95,118,150,${f.a * .7})`; ctx.lineWidth = .8; ctx.stroke(); }   // outline so flakes show on a pale sky
+          }
+          if (f.y > h + 10 || f.x < -120 || f.x > w + 120) Object.assign(f, flake(false));
+        }
       }
     }
     if (!reduced) requestAnimationFrame(frame);
   }
-  size(); addEventListener("resize", size); frame();
+  size(); addEventListener("resize", size); set(0); requestAnimationFrame(frame);
 })();
 
 /* Portrait: pupils look at the cursor, head leans gently toward it */
