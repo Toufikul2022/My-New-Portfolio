@@ -471,6 +471,53 @@ footer { overflow: clip; padding: 0 24px; }
   html { scroll-behavior: auto; }
   .reveal, .morph .w, .ink { opacity: 1; transform: none; filter: none; clip-path: none; }
 }
+
+/* ---------- Responsive refinements: phones and tablets only (desktop ≥1200px is unchanged) ---------- */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .avatar { width: 300px; }
+  .hero { gap: 40px; }
+}
+@media (max-width: 1023px) {
+  .work-grid { grid-template-columns: minmax(0, 1fr); }      /* keep project cards inside the screen */
+}
+@media (max-width: 767px) {
+  .sec-head, .work-head { padding: 64px 20px 28px; }
+  .work-body { padding: 20px 12px 36px; gap: 12px; }
+  .cards-pad { padding: 48px 20px 64px; }
+  .exps { gap: 48px; }
+  .media-card { gap: 20px; padding-bottom: 22px; border-radius: 20px; }
+  .media-inner { margin-left: 16px; }
+  .media-inner .screen { margin: 10px 12px; border-radius: 16px; }
+  .prompt { margin-right: 12px; padding: 18px 12px 12px; }
+  .caption { padding: 0 18px; }
+  .info-card { padding: 24px 16px; gap: 28px; border-radius: 20px; }
+  .info-card .bubble { padding: 28px 18px; border-radius: 24px; }
+  .feature { gap: 36px; padding: 26px 20px; border-radius: 20px; }
+  .feature p { max-width: none; }
+  .ring { height: 200px; }
+  .logos-wrap { padding: 12px 0; }
+  .morph { padding: 20px 10px 12px; }
+  .wall-outer { padding: 12px 0 24px; }
+  .about-me { margin-top: 32px; }
+  .photos { padding: 32px 0; }
+  .blocks { gap: 48px; }
+  .h3 { margin-bottom: 28px; }
+  .skill-graph { margin-top: 32px; }
+  .foot { gap: 64px; padding-top: 72px; }
+  .foot-bottom { padding-bottom: 40px; gap: 28px; }
+  .msg { max-width: 92%; }
+}
+@media (max-width: 400px) {
+  .header-inner { gap: 6px; }
+  .nav-pill { min-height: 46px; padding: 3px; gap: 2px; }
+  .nav-item { height: 40px; min-width: 40px; padding: 0 11px; }
+  .round-btn, .site-header .cta { width: 46px; height: 46px; }
+  .site-header .cta { padding: 4px; }
+  .site-header .cta-chip { left: 4px; top: 4px; bottom: 4px; width: 36px; }
+  .hero { padding-inline: 20px; }
+  .sec, footer { padding: 0 16px; }
+  .foot-navs { gap: 32px; }
+}
 </style>
 </head>
 <body>
@@ -1138,13 +1185,13 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
   let pos = 0, vel = 0, drag = null, visible = true;
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(box);
   function layout() {
-    const R = Math.min(box.clientWidth * 0.62, 980);
+    const R = Math.min(box.clientWidth * 0.62, 980), ls = box.clientWidth < 640 ? .55 : 1;   // smaller logos on phones
     nodes.forEach((d, i) => {
       let o = (((i - pos) % n) + n) % n; if (o > n / 2) o -= n;
       const a = o * step;
       const k = 1 - Math.cos(a);
       d.style.visibility = Math.abs(a) < 1.45 ? "visible" : "hidden";
-      d.style.transform = `translate(${R * Math.sin(a)}px, ${36 - 120 * k}px) scale(${0.6 + 0.48 * k})`;
+      d.style.transform = `translate(${R * Math.sin(a)}px, ${(36 - 120 * k) * ls}px) scale(${(0.6 + 0.48 * k) * ls})`;
       d.style.zIndex = Math.round(k * 100);
     });
   }
