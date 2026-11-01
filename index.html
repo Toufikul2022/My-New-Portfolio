@@ -125,18 +125,32 @@ ul { list-style: none; }
 .icon-sun, :root[data-theme="dark"] .icon-moon { display: none; }
 :root[data-theme="dark"] .icon-sun { display: block; }
 
-/* Primary pill with sliding arrow chip (Book a call / Learn more) */
+/* Primary pill with a dotted-arrow chip (Book a call / Learn more).
+   On hover the chip fills the pill and a trail of dotted arrows fades in, solid to faint. */
 .cta {
   position: relative; display: inline-flex; align-items: center; overflow: hidden; height: 52px; padding: 6px;
   border-radius: 999px; background: var(--primary); color: var(--primary-fg);
   box-shadow: 0 10px 40px -10px rgb(0 0 0 / .35); flex-shrink: 0;
 }
-.cta-chip { position: absolute; left: 6px; top: 6px; bottom: 6px; width: 40px; border-radius: 20px; background: var(--secondary); color: var(--fg); display: grid; place-items: center; z-index: 1; transition: width .45s cubic-bezier(.65,0,.35,1); }
-.cta-chip svg { width: 16px; height: 16px; transition: transform .45s cubic-bezier(.65,0,.35,1); }
+.cta-chip { position: absolute; left: 6px; top: 6px; bottom: 6px; width: 40px; border-radius: 20px; overflow: hidden; background: var(--secondary); color: var(--fg); z-index: 1; transition: width .45s cubic-bezier(.65,0,.35,1); }
+.cta-chip svg { width: 13px; height: 19.5px; fill: currentColor; }
+.cta-ico { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .2s ease; }
+.cta-trail { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-around; padding: 0 12px; }
+.cta-trail span { display: inline-grid; place-items: center; opacity: 0; transform: translateX(-6px); transition: opacity .25s ease, transform .35s cubic-bezier(.22,1,.36,1); }
+.cta-trail span:nth-child(2) { color: color-mix(in srgb, currentColor 78%, transparent); }
+.cta-trail span:nth-child(3) { color: color-mix(in srgb, currentColor 54%, transparent); }
+.cta-trail span:nth-child(4) { color: color-mix(in srgb, currentColor 32%, transparent); }
+.cta-trail span:nth-child(5) { color: color-mix(in srgb, currentColor 16%, transparent); }
 .cta-text { position: relative; margin: 0 20px 0 54px; font-weight: 500; white-space: nowrap; transition: opacity .3s; }
 @media (hover: hover) {
   .cta:hover .cta-chip { width: calc(100% - 12px); }
   .cta:hover .cta-text { opacity: 0; }
+  .cta:hover .cta-ico { opacity: 0; }
+  .cta:hover .cta-trail span { opacity: 1; transform: none; }
+  .cta:hover .cta-trail span:nth-child(2) { transition-delay: .05s; }
+  .cta:hover .cta-trail span:nth-child(3) { transition-delay: .1s; }
+  .cta:hover .cta-trail span:nth-child(4) { transition-delay: .15s; }
+  .cta:hover .cta-trail span:nth-child(5) { transition-delay: .2s; }
 }
 @media (max-width: 640px) {
   .site-header .cta { width: 52px; }
@@ -1095,7 +1109,9 @@ const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, attrs = {}, html = "") => { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); e.innerHTML = html; return e; };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+// five dots arranged as an arrow, as in the button's chip
+const DOTS = '<svg viewBox="0 0 16 24"><circle cx="2" cy="2" r="1.9"/><circle cx="8" cy="7" r="1.9"/><circle cx="14" cy="12" r="1.9"/><circle cx="8" cy="17" r="1.9"/><circle cx="2" cy="22" r="1.9"/></svg>';
+const CTA_CHIP = `<span class="cta-chip" aria-hidden="true"><span class="cta-ico">${DOTS}</span><span class="cta-trail">${`<span>${DOTS}</span>`.repeat(5)}</span></span>`;
 
 document.title = `${SITE.name} — Portfolio`;
 
@@ -1137,7 +1153,7 @@ rail.style.gridTemplateRows = `repeat(${SECTIONS.length}, 24px)`;
 
 const book = $("#bookCall");
 book.href = SITE.bookingUrl;
-book.innerHTML = `<span class="cta-chip" aria-hidden="true">${ARROW}</span><span class="cta-text">${esc(SITE.bookingLabel)}<span class="sr-only"> (opens in a new tab)</span></span>`;
+book.innerHTML = `${CTA_CHIP}<span class="cta-text">${esc(SITE.bookingLabel)}<span class="sr-only"> (opens in a new tab)</span></span>`;
 
 function setActive() {
   const y = scrollY + innerHeight * 0.35;
@@ -1404,7 +1420,7 @@ SITE.works.forEach((w, i) => {
           <div class="meta">
             <p class="muted">Role: ${esc(w.role)}</p>
             <p>${esc(w.detail)}</p>
-            <a class="cta" href="${esc(w.link)}" target="_blank" rel="noopener"><span class="cta-chip" aria-hidden="true">${ARROW}</span><span class="cta-text">Learn more<span class="sr-only"> about ${esc(w.product)}</span></span></a>
+            <a class="cta" href="${esc(w.link)}" target="_blank" rel="noopener">${CTA_CHIP}<span class="cta-text">Learn more<span class="sr-only"> about ${esc(w.product)}</span></span></a>
           </div>
         </div>
       </div>
