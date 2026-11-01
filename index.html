@@ -579,10 +579,35 @@ html.loading { overflow: hidden; }
   const keyEls = keys.map(k => { const g = document.createElementNS(NS, "g"); g.setAttribute("class", "key"); block(g, k.x0, k.y0, k.x1, k.y1, .5, 1.05, .13, .14); svg.append(g); return g; });
   const b = svg.getBBox(); svg.setAttribute("viewBox", `${b.x - 4} ${b.y - 6} ${b.width + 8} ${b.height + 12}`);
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Mechanical key sound, synthesised (no audio file): a filtered noise "click" plus a short low "thock".
+  // Browsers only allow sound after the visitor interacts, so it starts on the first tap/click/key press.
+  let audio = null, noise = null;
+  try {
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+    noise = audio.createBuffer(1, audio.sampleRate * .06, audio.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 2;
+    audio.resume().catch(() => {});
+    const unlock = () => audio.resume().catch(() => {});
+    ["pointerdown", "keydown", "touchstart"].forEach(ev => addEventListener(ev, unlock, { once: true, passive: true }));
+  } catch (e) { audio = null; }
+  function clack(big) {
+    if (!audio || audio.state !== "running") return;
+    const t = audio.currentTime, out = audio.createGain(); out.gain.value = big ? .5 : .38; out.connect(audio.destination);
+    const src = audio.createBufferSource(), bp = audio.createBiquadFilter(), g = audio.createGain();
+    src.buffer = noise; bp.type = "bandpass"; bp.frequency.value = (big ? 1100 : 2400) + Math.random() * 1400; bp.Q.value = 1.2;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.9, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + (big ? .06 : .035));
+    src.connect(bp).connect(g).connect(out); src.start(t); src.stop(t + .07);
+    const o = audio.createOscillator(), og = audio.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime((big ? 95 : 150) + Math.random() * 40, t); o.frequency.exponentialRampToValueAtTime(60, t + .04);
+    og.gain.setValueAtTime(.35, t); og.gain.exponentialRampToValueAtTime(.001, t + (big ? .07 : .045));
+    o.connect(og).connect(out); o.start(t); o.stop(t + .08);
+  }
   // random key presses, like someone typing
   let typing;
   if (!still) (function press() {
-    const k = keyEls[Math.floor(Math.random() * keyEls.length)]; k.classList.add("on"); setTimeout(() => k.classList.remove("on"), 140);
+    const i = Math.floor(Math.random() * keyEls.length), k = keyEls[i];
+    k.classList.add("on"); setTimeout(() => k.classList.remove("on"), 140);
+    clack(keys[i].x1 - keys[i].x0 > 3);                        // the space bar sounds deeper
     typing = setTimeout(press, 70 + Math.random() * 110);
   })();
   // progress: eases toward 90 until the page has loaded, then to 100; at least ~1.5 s, at most ~6 s
@@ -599,6 +624,7 @@ html.loading { overflow: hidden; }
       num.textContent = 100; bar.style.transform = "scaleX(1)";
       setTimeout(() => {
         const el = document.getElementById("loader"); el.classList.add("done"); clearTimeout(typing);
+        if (audio) setTimeout(() => audio.close().catch(() => {}), 300);
         document.documentElement.classList.remove("loading");
         setTimeout(() => el.remove(), 700);
       }, 250);
