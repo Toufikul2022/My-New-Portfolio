@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Toufik Ul Islam — Portfolio</title>
 <meta name="description" content="Portfolio of Toufik Ul Islam.">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #ffffff;
@@ -518,9 +519,95 @@ footer { overflow: clip; padding: 0 24px; }
   .sec, footer { padding: 0 16px; }
   .foot-navs { gap: 32px; }
 }
+
+/* ---------- Opening loader: isometric keyboard + progress ---------- */
+html.loading { overflow: hidden; }
+.loader-screen { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--bg); transition: opacity .6s ease, visibility 0s .6s; }
+.loader-screen.done { opacity: 0; visibility: hidden; }
+.loader-inner { display: flex; flex-direction: column; align-items: center; gap: 56px; transition: transform .6s cubic-bezier(.22,1,.36,1); }
+.loader-screen.done .loader-inner { transform: translateY(-12px); }
+.kb { width: min(340px, 78vw); height: auto; overflow: visible; }
+.kb path { fill: var(--bg); stroke: color-mix(in srgb, var(--fg) 34%, transparent); stroke-width: 1; stroke-linejoin: round; }
+.kb .key { transition: transform .09s ease-out; }
+.kb .key.on { transform: translateY(2.2px); }
+.kb .key.on path { stroke: var(--fg); stroke-width: 1.3; }
+.load-meta { width: 160px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted); }
+.load-bar { height: 1px; background: color-mix(in srgb, var(--fg) 12%, transparent); margin-bottom: 12px; }
+.load-bar i { display: block; height: 100%; background: var(--fg); transform-origin: left; transform: scaleX(0); }
+.load-meta div:last-child { display: flex; justify-content: space-between; }
 </style>
 </head>
 <body>
+<!-- Opening loader: an isometric keyboard types while the page loads -->
+<div class="loader-screen" id="loader" role="status" aria-label="Loading">
+  <div class="loader-inner">
+    <svg class="kb" id="kb" aria-hidden="true"></svg>
+    <div class="load-meta"><div class="load-bar"><i id="loadBar"></i></div><div><span>Loading</span><span id="loadNum">0</span></div></div>
+  </div>
+</div>
+<script>
+(function loader() {
+  document.documentElement.classList.add("loading");
+  const svg = document.getElementById("kb"), NS = "http://www.w3.org/2000/svg", U = 20;
+  const iso = (x, y, z) => [(x - y) * .866 * U, ((x + y) * .5 - z) * U];       // isometric projection
+  // rounded rectangle on a horizontal plane at height z, as 3D points
+  function rrect(x0, y0, x1, y1, r, z) {
+    const out = [], c = [[x1 - r, y0 + r, -90], [x1 - r, y1 - r, 0], [x0 + r, y1 - r, 90], [x0 + r, y0 + r, 180]];
+    c.forEach(([cx, cy, a0]) => { for (let k = 0; k <= 5; k++) { const a = (a0 + k * 18) * Math.PI / 180; out.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r, z]); } });
+    return out;
+  }
+  function hull(p2) {                                            // convex hull of projected points (monotone chain)
+    const P = p2.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]), cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lo = [], up = [];
+    for (const p of P) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+    for (const p of P.reverse()) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+    return lo.slice(0, -1).concat(up.slice(0, -1));
+  }
+  const path2 = (g, P) => { const e = document.createElementNS(NS, "path"); e.setAttribute("d", "M" + P.map(p => p.map(v => v.toFixed(1)).join(",")).join(" L") + "Z"); g.append(e); };
+  function block(g, x0, y0, x1, y1, zb, zt, inset, r) {           // soft rounded box: silhouette, then its top face
+    const base = rrect(x0, y0, x1, y1, r, zb), top = rrect(x0 + inset, y0 + inset, x1 - inset, y1 - inset, r * 1.2, zt);
+    path2(g, hull([...base, ...top].map(q => iso(...q))));
+    path2(g, top.map(q => iso(...q)));
+  }
+  // a compact 60% layout, widths in key units (each row is 15 units)
+  const rows = [[1,1,1,1,1,1,1,1,1,1,1,1,1,2], [1.5,1,1,1,1,1,1,1,1,1,1,1,1,1.5], [1.75,1,1,1,1,1,1,1,1,1,1,1,2.25], [2.25,1,1,1,1,1,1,1,1,1,1,2.75], [1.25,1.25,1.25,6.25,1.25,1.25,1.25,1.25]];
+  const caseG = document.createElementNS(NS, "g"); svg.append(caseG);
+  block(caseG, -.4, -.4, 15.4, 5.4, 0, .5, .12, .45);
+  const keys = [];
+  rows.forEach((row, y) => { let x = 0; row.forEach(wd => { keys.push({ x0: x + .07, y0: y + .07, x1: x + wd - .07, y1: y + .93 }); x += wd; }); });
+  keys.sort((a, b) => (a.x0 + a.y0) - (b.x0 + b.y0));          // draw back to front
+  const keyEls = keys.map(k => { const g = document.createElementNS(NS, "g"); g.setAttribute("class", "key"); block(g, k.x0, k.y0, k.x1, k.y1, .5, 1.05, .13, .14); svg.append(g); return g; });
+  const b = svg.getBBox(); svg.setAttribute("viewBox", `${b.x - 4} ${b.y - 6} ${b.width + 8} ${b.height + 12}`);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // random key presses, like someone typing
+  let typing;
+  if (!still) (function press() {
+    const k = keyEls[Math.floor(Math.random() * keyEls.length)]; k.classList.add("on"); setTimeout(() => k.classList.remove("on"), 140);
+    typing = setTimeout(press, 70 + Math.random() * 110);
+  })();
+  // progress: eases toward 90 until the page has loaded, then to 100; at least ~1.5 s, at most ~6 s
+  const bar = document.getElementById("loadBar"), num = document.getElementById("loadNum"), start = performance.now();
+  let p = 0, loaded = false;
+  addEventListener("load", () => { loaded = true; });
+  setTimeout(() => { loaded = true; }, 6000);
+  (function tick() {
+    const t = performance.now() - start, minT = still ? 400 : 1500;
+    const target = loaded && t > minT ? 100 : Math.min(90, t / minT * 90);
+    p += (target - p) * (still ? .5 : .08) + (p < target ? .2 : 0); p = Math.min(p, target);
+    bar.style.transform = `scaleX(${p / 100})`; num.textContent = Math.round(p);
+    if (p >= 99.5) {
+      num.textContent = 100; bar.style.transform = "scaleX(1)";
+      setTimeout(() => {
+        const el = document.getElementById("loader"); el.classList.add("done"); clearTimeout(typing);
+        document.documentElement.classList.remove("loading");
+        setTimeout(() => el.remove(), 700);
+      }, 250);
+      return;
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
 
 <div class="edge-blur top" aria-hidden="true"></div>
 <div class="edge-blur bottom" aria-hidden="true"></div>
