@@ -1332,10 +1332,10 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
     const R = Math.min(box.clientWidth * 0.62, 980), ls = box.clientWidth < 640 ? .55 : 1;   // smaller logos on phones
     nodes.forEach((d, i) => {
       let o = (((i - pos) % n) + n) % n; if (o > n / 2) o -= n;
-      const a = o * step;
+      const a = o * (ls < 1 ? .56 : step);                      // wider spacing on phones
       const k = 1 - Math.cos(a);
       d.style.visibility = Math.abs(a) < 1.45 ? "visible" : "hidden";
-      d.style.transform = `translate(${R * Math.sin(a)}px, ${(36 - 120 * k) * ls}px) scale(${(0.6 + 0.48 * k) * ls})`;
+      d.style.transform = `translate(${R * Math.sin(a)}px, ${(36 - 120 * k) * ls}px) scale(${(0.6 + (ls < 1 ? .28 : .48) * k) * ls})`;
       d.style.zIndex = Math.round(k * 100);
     });
   }
