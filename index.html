@@ -265,6 +265,8 @@ main { position: relative; isolation: isolate; }
 .ring { position: relative; height: 310px; overflow: hidden; cursor: grab; touch-action: pan-y; user-select: none; }
 .ring:active { cursor: grabbing; }
 .ring .logo { position: absolute; left: 50%; top: 50%; width: 209px; height: 209px; margin: -104.5px; will-change: transform; }
+.ring .logo > .mark { background: #1d1d1f; border-color: transparent; box-shadow: 0 18px 40px -22px rgb(0 0 0 / .45); }
+.ring .logo > .mark svg { width: 84%; height: 84%; font-family: Geist, system-ui, sans-serif; }
 .ring .logo > * { width: 100%; height: 100%; border-radius: 50%; border: 1px solid rgb(0 0 0 / .06); background: #fff; display: grid; place-items: center; object-fit: contain; font-size: 44px; font-weight: 600; letter-spacing: -.03em; color: #111; }
 :root[data-theme="dark"] .ring .logo > * { box-shadow: 0 0 0 1px rgb(255 255 255 / .15); }
 
@@ -848,10 +850,16 @@ const SITE = {
   ],
 
   logosTitle: "Brands and products I’ve designed for",
-  // Text marks for the curved carousel. Use { img: "logo.png", alt: "Name" } to show a real logo.
+  // Logo marks for the curved carousel: white artwork (svg, 100×100) on a dark circle.
+  // To use a real logo file instead: { img: "logo.png", alt: "Name" }.
   logos: [
-    { text: "A&M" }, { text: "VoiceIQ" }, { text: "TrustLayer" }, { text: "Style.Bd" },
-    { text: "SocialBoost" }, { text: "Sabbir LIVE" }, { text: "CRM" }, { text: "AI" },
+    { alt: "A&M Canadian Immigration", svg: '<text x="50" y="55" text-anchor="middle" font-size="27" font-weight="700" letter-spacing="-1" fill="#fff">A&amp;M</text><text x="50" y="71" text-anchor="middle" font-size="8.5" font-weight="500" letter-spacing="4" fill="#fff" opacity=".7">LAW</text>' },
+    { alt: "VoiceIQ", svg: '<g fill="#fff"><rect x="25" y="41" width="7" height="18" rx="3.5"/><rect x="36.5" y="32" width="7" height="36" rx="3.5"/><rect x="48" y="23" width="7" height="54" rx="3.5"/><rect x="59.5" y="34" width="7" height="32" rx="3.5"/><rect x="71" y="43" width="7" height="14" rx="3.5"/></g>' },
+    { alt: "TrustLayer AI", svg: '<g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 19 L75 28 V47 C75 64 64 76 50 82 C36 76 25 64 25 47 V28 Z"/><path d="M39 50 L47 58 L62 42"/></g>' },
+    { alt: "Style.Bd", svg: '<rect x="24" y="24" width="52" height="52" rx="15" fill="#fff"/><text x="50" y="63" text-anchor="middle" font-size="36" font-weight="700" fill="#1d1d1f">S</text>' },
+    { alt: "SocialBoost AI", svg: '<g fill="#fff"><path d="M46 22 C49 41 55 47 74 50 C55 53 49 59 46 78 C43 59 37 53 18 50 C37 47 43 41 46 22 Z"/><path d="M73 18 C74 25 76 27 83 28 C76 29 74 31 73 38 C72 31 70 29 63 28 C70 27 72 25 73 18 Z"/></g>' },
+    { alt: "Sabbir LIVE", svg: '<path d="M39 31 L70 50 L39 69 Z" fill="#fff" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>' },
+    { alt: "Immigration CRM", svg: '<g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 27 H76 L56 51 V71 L44 77 V51 Z"/></g>' },
   ],
 
   galleryTitle: "Interfaces designed around real user needs, from AI dashboards and live-shopping apps to legal websites that turn complex rules into clear journeys.",
@@ -1291,7 +1299,9 @@ addEventListener("pointermove", e => { pointer.vx = e.clientX - pointer.x; point
   box.setAttribute("aria-label", SITE.logosTitle);
   const nodes = SITE.logos.map(l => {
     const d = el("div", { class: "logo" });
-    d.innerHTML = l.img ? `<img src="${esc(l.img)}" alt="${esc(l.alt || "")}" draggable="false">` : `<span style="font-size:${Math.min(44, 300 / l.text.length)}px">${esc(l.text)}</span>`;
+    d.innerHTML = l.img ? `<img src="${esc(l.img)}" alt="${esc(l.alt || "")}" draggable="false">`
+      : l.svg ? `<span class="mark" role="img" aria-label="${esc(l.alt)}"><svg viewBox="0 0 100 100">${l.svg}</svg></span>`
+      : `<span style="font-size:${Math.min(44, 300 / l.text.length)}px">${esc(l.text)}</span>`;
     box.append(d); return d;
   });
   const n = nodes.length, step = 0.42;
