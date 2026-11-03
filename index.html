@@ -701,6 +701,7 @@ html.loading { overflow: hidden; }
         <path d="M150 288 L250 288 L246 400 L154 400 Z" fill="#fafafa"/>
         <path d="M188 300 L212 300 L208 318 L192 318 Z" fill="#5b1e2d"/>
         <path d="M192 318 L208 318 L214 334 L210 400 L190 400 L186 334 Z" fill="#5b1e2d"/>
+        <path d="M187 340 L213 328 M187 356 L212 344 M188 372 L211 360 M189 388 L210 376" fill="none" stroke="#7d3445" stroke-width="1.5"/>
         <path d="M164 280 L192 300 L178 324 L154 296 Z" fill="#fafafa"/>
         <path d="M236 280 L208 300 L222 324 L246 296 Z" fill="#fafafa"/>
         <!-- jacket -->
@@ -708,34 +709,39 @@ html.loading { overflow: hidden; }
         <path d="M370 400 C364 346 316 314 248 292 L230 336 L238 346 L214 400 Z" fill="#1d1d1f"/>
         <path d="M96 400 L100 362 M304 400 L300 362" fill="none" stroke="#555" stroke-width="3"/>
         <!-- neck -->
-        <path d="M168 248 L168 284 C180 296 220 296 232 284 L232 248 Z" fill="#fafafa"/>
+        <path d="M168 248 L168 284 C180 296 220 296 232 284 L232 248 Z" fill="#ebc8a7"/>
       </g>
       <g class="head stroke" id="head">
         <!-- ears -->
-        <ellipse cx="128" cy="172" rx="16" ry="25" fill="#fafafa"/>
-        <ellipse cx="272" cy="172" rx="16" ry="25" fill="#fafafa"/>
-        <path d="M128 162 Q120 172 128 184 M272 162 Q280 172 272 184" fill="none" stroke-width="3"/>
-        <!-- face -->
-        <path d="M132 148 C130 96 162 70 200 70 C240 70 270 96 268 148 C268 206 250 258 200 264 C150 258 132 206 132 148 Z" fill="#fafafa"/>
-        <!-- hair: short sides, swept top -->
-        <path d="M130 160 C116 104 138 58 196 50 C252 44 288 76 272 158 C268 134 264 118 256 106 C230 96 196 104 158 94 C148 110 138 132 134 160 Z" fill="#202020"/>
-        <path d="M164 66 C196 56 236 60 260 80" fill="none" stroke="#5a5a5a" stroke-width="3"/>
-        <!-- brows -->
-        <path d="M148 138 Q165 128 183 136 M217 136 Q235 128 252 138" fill="none"/>
-        <!-- eyes -->
-        <path d="M152 162 Q166 150 180 162 Q166 172 152 162 Z" fill="#fff" stroke-width="3.5"/>
-        <path d="M220 162 Q234 150 248 162 Q234 172 220 162 Z" fill="#fff" stroke-width="3.5"/>
-        <circle class="pupil" cx="166" cy="162" r="5" fill="#111" stroke="none"/>
-        <circle class="pupil" cx="234" cy="162" r="5" fill="#111" stroke="none"/>
-        <!-- nose -->
-        <path d="M200 166 Q197 186 191 196 Q200 203 209 196" fill="none" stroke-width="4"/>
-        <!-- light moustache -->
-        <path d="M184 213 Q200 207 216 213" fill="none" stroke-width="3" opacity=".6"/>
-        <!-- smile with teeth -->
-        <path d="M166 220 Q200 262 234 220 Q200 230 166 220 Z" fill="#fff"/>
-        <path d="M172 226 Q200 236 228 226" fill="none" stroke-width="2.5" opacity=".5"/>
-        <!-- cheek lines -->
-        <path d="M158 214 Q154 222 160 230 M242 214 Q246 222 240 230" fill="none" stroke-width="3" opacity=".5"/>
+        <ellipse cx="124" cy="178" rx="15" ry="24" fill="#ebc8a7"/>
+        <ellipse cx="276" cy="178" rx="15" ry="24" fill="#ebc8a7"/>
+        <path d="M125 168 Q117 178 125 190 M275 168 Q283 178 275 190" fill="none" stroke-width="3"/>
+        <!-- face: full cheeks, soft rounded chin -->
+        <path d="M130 150 C128 96 160 74 200 74 C242 74 272 96 270 150 C272 196 262 232 240 252 C226 264 212 270 200 270 C188 270 174 264 160 252 C138 232 128 196 130 150 Z" fill="#ebc8a7"/>
+        <!-- hair: combed up and back with volume on top, high forehead, short sides -->
+        <path d="M128 160 C120 112 132 70 172 52 C204 38 250 44 268 70 C282 92 280 128 272 160 C268 140 264 124 258 112 C254 100 246 92 236 88 C214 82 186 86 166 92 C152 98 142 112 136 132 C133 142 131 151 128 160 Z" fill="#1c1c1c"/>
+        <path d="M160 64 C194 46 236 50 258 72 M176 76 C204 64 232 66 250 84" fill="none" stroke="#5a5a5a" stroke-width="2.5"/>
+        <!-- brows: straight and fairly thick -->
+        <path d="M146 145 C156 137 172 135 184 140 L183 146 C172 142 158 143 147 150 Z" fill="#1c1c1c" stroke-width="2"/>
+        <path d="M254 145 C244 137 228 135 216 140 L217 146 C228 142 242 143 253 150 Z" fill="#1c1c1c" stroke-width="2"/>
+        <!-- smiling almond eyes -->
+        <path d="M152 168 Q166 158 180 167 Q166 174 152 168 Z" fill="#fff" stroke-width="3.5"/>
+        <path d="M220 167 Q234 158 248 168 Q234 174 220 167 Z" fill="#fff" stroke-width="3.5"/>
+        <circle class="pupil" cx="166" cy="167" r="4.5" fill="#111" stroke="none"/>
+        <circle class="pupil" cx="234" cy="167" r="4.5" fill="#111" stroke="none"/>
+        <path d="M155 177 Q166 182 177 176 M223 176 Q234 182 245 177" fill="none" stroke-width="2" opacity=".45"/>
+        <!-- broader nose -->
+        <path d="M200 174 Q198 188 194 196" fill="none" stroke-width="3" opacity=".7"/>
+        <path d="M185 200 Q189 210 200 209 Q211 210 215 200" fill="none" stroke-width="4"/>
+        <!-- thin moustache -->
+        <path d="M181 220 C189 216 196 216 200 218 C204 216 211 216 219 220" fill="none" stroke="#2a2a2a" stroke-width="3" opacity=".75"/>
+        <!-- wide smile showing the top teeth -->
+        <path d="M172 229 C184 225 216 225 228 229 C224 245 212 252 200 252 C188 252 176 245 172 229 Z" fill="#fff" stroke-width="4"/>
+        <path d="M175 234 C188 240 212 240 225 234" fill="none" stroke-width="2" opacity=".5"/>
+        <path d="M191 230 L191 237 M200 230 L200 238 M209 230 L209 237" fill="none" stroke-width="1.3" opacity=".25"/>
+        <!-- small beard patch under the lip, smile lines -->
+        <path d="M192 260 C196 263 204 263 208 260 C205 266 195 266 192 260 Z" fill="#3a3a3a" stroke="none" opacity=".5"/>
+        <path d="M160 214 Q155 227 164 238 M240 214 Q245 227 236 238" fill="none" stroke-width="2.5" opacity=".45"/>
       </g>
     </svg>
     <ul class="accordion" id="accordion"></ul>
